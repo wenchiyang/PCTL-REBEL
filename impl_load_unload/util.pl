@@ -1,8 +1,9 @@
 :- module(util, [subsumess/2, subsetgen/2, predInList/3, extract/1,
 stateMetaData/3, mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/5, printall_format/1, filter/4,
-getVFStates/2, printall/1, andstate/3]).
+getVFStates/2, printall/1, andstate/3, legalstate/2]).
 
+:- use_module(setting).
 
 % subsumess/4: check whether S1 subsumes S2
 % S2 needs to be given, otherwise this enters an infinite loop
@@ -181,8 +182,8 @@ getVFStates(VFs, States):-
     maplist(getVFState, VFs, States).
 
 %%
-constructAbsorbingVFs(S, v(1.0, S)).
-constructAbsorbingQs(S, q(1.0, S, Size, Str, Sta)):-
+constructAbsorbingVFs(S, v(100.0, S)).
+constructAbsorbingQs(S, q(100.0, S, Size, Str, Sta)):-
     getstruct(S, Size, Str, Sta).
 
 % andstate/2:
@@ -194,6 +195,57 @@ andstate(E1, E2, Result):-
 % if E1 and E2 cannot be combined, return []
 andstate(_, _, []):-!.
 
+
+% read the setting: bounded or unbounded
+legalstate(S, _):-
+    city_limit(non), !,
+    legalstateUnbounded(S), !.
+
+legalstate(S, _):-
+    \+city_limit(non), !,
+    legalstatebounded(S), !.
+
+legalstateUnbounded(S):-
+  extract(S), clean, !.
+
+legalstatebounded(S):-
+  extract(S), clean, !,
+  city_limit(MaxCity),
+  min_num_cities(S, N),
+  N =< MaxCity.
+
+min_num_cities(S, N):-
+    statecities(S, ListCities), !,
+    duplicate_term(ListCities, ListCities1), !,
+    list_to_set1(ListCities1, SetCities), !,
+    length(SetCities, N), !.
+
+
+% min_num_blocks(S, N): state S has at least N blocks
+min_num_blocks(S, N):-
+    stateblocks(S, ListBlocks), !,
+    duplicate_term(ListBlocks, ListBlocks1), !,
+    list_to_set1(ListBlocks1, SetBlocks), !,
+    length(SetBlocks, N), !.
+
+
+
+statecities([], []) :- !.
+statecities([tin(_,C)|S], [C|Vars]):-
+    statecities(S, Vars), !.
+statecities([bin(_,C)|S], [C|Vars]):-
+    statecities(S, Vars), !.
+statecities([on(_,_)|S],  Vars):-
+    statecities(S, Vars), !.
+
+% stateblocks(S, B): state S has a set of blocks B
+stateblocks([], []) :- !.
+stateblocks([tin(T,C)|S], [T,C|Vars]):-
+    stateblocks(S, Vars), !.
+stateblocks([on(B,T)|S],  [B,T|Vars]):-
+    stateblocks(S, Vars), !.
+stateblocks([bin(T,C)|S], [T,C|Vars]):-
+    stateblocks(S, Vars), !.
 
 %%
 printall([]):- !.
@@ -211,7 +263,7 @@ printall_format([q(Prob, _, _, _, Sta)|R]):-
 
 
 printall_format([partialQ(Q1,A1,_,_,_,Sta)|R]):-
-    writeln(partialQ(Q1,A1,Sta)),nl,
+    writeln(partialQ(Q1,A1,Sta)),
     printall_format(R),!.
 
 % printall_format([partialQ(Q1,A1,_,_,_,Sta)|R]):-

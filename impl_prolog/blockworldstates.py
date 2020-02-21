@@ -54,5 +54,5 @@ def g3(n, k):
 
 
 print("10 blocks ," + str(g3(10,0)) + " states. ")
-for i in range(9):
-    print(g3(i,1))
+for i in range(1, 11):
+    print(str(i) + " blocks : " + str(g3(i,0)) + " states.")

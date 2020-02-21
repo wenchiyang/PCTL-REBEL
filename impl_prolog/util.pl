@@ -1,8 +1,9 @@
 :- module(util, [subsumess/4, subsetgen/2, predInList/3, extract/1,
 stateMetaData/3, mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/4, printall_format/1, filter/4,
-getVFStates/2, printall/1, andstate/3]).
+getVFStates/2, printall/1, andstate/3, legalstate/2]).
 
+:- use_module(setting).
 
 % subsumess/4: check whether S1 subsumes S2
 % S2 needs to be given, otherwise this enters an infinite loop
@@ -81,14 +82,12 @@ structsubset(S1, S2, ClSubS2, OnSubS2):-
 take([ClNew|_], [1, 0], [ClNew]):- !.
 take(Old, [0, OnL], OnNew) :-
     predInList(Old, on, OnOld), % take all on/2
-    %OnL1 is OnL-1,
     length(OnNew, OnL),
     prefix(OnNew, OnOld), !. % take the first OnL1 on/2
 
 take(Old, [1, OnL], [ClNew|OnNew]):-
     Old = [ClNew|_],
     predInList(Old, on, OnOld),
-    %OnL1 is OnL-1,
     length(OnNew, OnL),
     prefix(OnNew, OnOld), !.
 
@@ -192,6 +191,48 @@ andstate(E1, E2, Result):-
     mergestacks(StaStr, Result), !.
 % if E1 and E2 cannot be combined, return []
 andstate(_, _, []):-!.
+
+
+% read the setting: bounded or unbounded
+legalstate(S, _):-
+    blocks_limit(non), !,
+    legalstateUnbounded(S), !.
+
+legalstate(_, Size):-
+    \+blocks_limit(non), !,
+    legalstatebounded(Size), !.
+%%
+
+
+
+legalstateUnbounded(S):-
+  extract(S), clean, !.
+
+legalstatebounded(Size):-
+    extract(S), clean, !,
+    blocks_limit(MaxBlocks),
+    onSize(Size, OnSize),
+    sum_list(OnSize, B), !,
+    B =< MaxBlocks.
+
+onSize([], []):-!.
+onSize([[_,On]|Size], [On1|R]):-
+    On1 is On+1,
+    onSize(Size, R), !.
+
+% min_num_blocks(S, N): state S has at least N blocks
+min_num_blocks(S, N):-
+    stateblocks(S, ListBlocks), !,
+    duplicate_term(ListBlocks, ListBlocks1), !,
+    list_to_set1(ListBlocks1, SetBlocks), !,
+    length(SetBlocks, N), !.
+
+% stateblocks(S, B): state S has a set of blocks B
+stateblocks([], []) :- !.
+stateblocks([cl(X)|S], [X|B]):-
+    stateblocks(S, B), !.
+stateblocks([on(X,Y)|S], [X,Y|B]):-
+    stateblocks(S, B), !.
 
 
 %%

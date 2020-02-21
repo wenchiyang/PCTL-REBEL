@@ -19,10 +19,8 @@ memo(Goal) :-
 
 experiment1 :-
     protocol('experiments/exp1_multithread.txt'),
-    evaluate(until(5, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
+    evaluate(until(10, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
     noprotocol.
-
-blocks_limit(10).
 
 % Syntax checking -- Do not allow [].
 % evaluate(Phi, []) :- functor(Phi, [], _), !.
@@ -87,6 +85,12 @@ next(Phi2s, Op, Threshold, SortedStates) :-
     !.
 
 
+convergence([], [], _) :- !.
+convergence([v(Q1, _)|PreviousVs], [v(Q2, _)|CurrentVs], ConvergenceThreshold) :-
+    Residual is abs(Q1-Q2),
+    Residual < ConvergenceThreshold,
+    convergence(PreviousVs,CurrentVs,ConvergenceThreshold), !.
+
 valueIteration(TotalSteps, CurrentStep, _, [_, FinalVS], _, _, FinalVS) :-
     CurrentStep =:= TotalSteps + 1, !.
 valueIteration(TotalSteps, CurrentStep, InitV, Vs, Phi1s, Phi2sQs, FinalVs):-
@@ -94,11 +98,18 @@ valueIteration(TotalSteps, CurrentStep, InitV, Vs, Phi1s, Phi2sQs, FinalVs):-
     retractall(memo_(valueIteration_helper(RemoveMemoryIndex,_,_,_,_))),
     print_message(informational, iteration(CurrentStep)),
     memo(valueIteration_helper(CurrentStep, InitV, Vs, Phi1s, Phi2sQs)), !,
-    Vs = [CurrentVs,_],
-    NextStep is CurrentStep + 1,
+    Vs = [CurrentVs,PreviousVs],
     printall_format(CurrentVs), nl, nl,
+    (
+    is_list(PreviousVs),
+    convergence(PreviousVs,CurrentVs,0.0001)
+    ->
+    CurrentVs=FinalVs, !
+    ;
+    NextStep is CurrentStep + 1,
     valueIteration(TotalSteps, NextStep, InitV, [_, CurrentVs], Phi1s, Phi2sQs, FinalVs),
-    !.
+    !
+    ), !.
 %
 valueIteration_helper(0, InitV, [InitV,[]], _, _):-!.
 valueIteration_helper(CurrentStep, InitV, [CurrentV,PreviousV], Phi1s, Phi2sQs):-
@@ -202,7 +213,7 @@ getPartialQwp2(VFs, Phi1s, SPQs2):-
     thread_exit([SPQs2, Time]),
     !.
 
-wp1(VFs, Phi1s, PQ) :-
+wp1(VFs, Phi1s, PQ) :- % TODO rewards
     member(v(VFValue, VFState), VFs),
     VFValue > 0,
     mydif(X,Y), mydif(Y,Z), mydif(X,Z),
@@ -352,26 +363,6 @@ findall_partialQs(X, Goal, Results) :-
 legalaction(move(X,Y,Z)):-
   X\=Y, Y\=Z, Z\=X, !.
 
-legalstate(S):-
-  extract(S), clean, !,
-  % check state-boundedness
-  blocks_limit(MaxBlocks),
-  min_num_blocks(S, N),
-  N =< MaxBlocks.
-
-% min_num_blocks(S, N): state S has at least N blocks
-min_num_blocks(S, N):-
-    stateblocks(S, ListBlocks), !,
-    duplicate_term(ListBlocks, ListBlocks1), !,
-    list_to_set1(ListBlocks1, SetBlocks), !,
-    length(SetBlocks, N), !.
-
-% stateblocks(S, B): state S has a set of blocks B
-stateblocks([], []) :- !.
-stateblocks([cl(X)|S], [X|B]):-
-    stateblocks(S, B), !.
-stateblocks([on(X,Y)|S], [X,Y|B]):-
-    stateblocks(S, B), !.
 
 
 message_hook(exetime(Start, Stop), informational, _):-

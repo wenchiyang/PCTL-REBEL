@@ -2,6 +2,7 @@
         find_stacks/1, collectstack/0, collect_unclear/0
         ]).
 :- use_module(library(chr)).
+
 :- use_module(chr(chr_runtime)).
 %:- set_prolog_flag(optimize, full).
 
@@ -52,13 +53,20 @@ collect_unclear \ on(A,B) <=>
     stack([on(A,B)]).
 collect_unclear <=> true.
 
+all_dif([]):-!.
+all_dif([E|ListBlocks]):-
+    maplist(mydif(E), ListBlocks),
+    all_dif(ListBlocks), !.
+
 %%%%% sortstack sorts all stacks and computes their structures
 stack(RevStack) <=>
     reverse(RevStack, Stack),
     predInList(Stack, on, OnStack),
     predInList(Stack, cl, ClStack),
+    %=====blocks of the same stack are all different=======
+
+    %============
     length(OnStack, LOn),
-    %(L1 == 0 -> LOn is 0 ; LOn is L1+1),
     length(ClStack, LCl),
     stackstruct(Stack, [LCl, LOn]).
 
