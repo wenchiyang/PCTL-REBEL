@@ -100,6 +100,6 @@ def generateModel(filename, n , det):
     fh.close()
 
 
-for i in range(3,11):
-    generateModel("detBW%d.nm"%i, i, True)
-    generateModel("nondetBW%d.nm"%i, i, False)
+for i in range(2,21):
+    generateModel("DetBW%d.nm"%i, i, True)
+    generateModel("NonDetBW%d.nm"%i, i, False)
