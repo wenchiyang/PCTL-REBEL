@@ -11,10 +11,10 @@ resultfolder=$expfolder$det"Results/"
 #rm -r $resultfolder
 mkdir -p $resultfolder
 
-for engine in  "expl" #"sparse" "dd"  "hybrid"  "abs"
+for engine in  "expl" #"sparse" #"expl" #"sparse" "dd"  "hybrid"  "abs"
 do
 
-    for n_block in 16 17 18 19 20
+    for n_block in 10
     do
         echo "Experiments: "$n_block" blocks with engine "$engine
 
