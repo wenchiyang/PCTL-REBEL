@@ -1,7 +1,8 @@
 :- module(util, [subsumess/4, subsetgen/2, predInList/3, extract/1,
 stateMetaData/3, mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/4, printall_format/1, filter/4,
-getVFStates/2, printall/1, andstate/3, legalstate/2]).
+getVFStates/2, printall/1, andstate/3, legalstate/2, oi/1, legalstate/1,
+boundedstate/2]).
 
 :- use_module(setting).
 
@@ -194,26 +195,33 @@ andstate(_, _, []):-!.
 
 
 % read the setting: bounded or unbounded
-legalstate(S, _):-
-    blocks_limit(non), !,
-    legalstateUnbounded(S), !.
+% legalstate(S, _):-
+%     blocks_limit(non), !,
+%     legalstateUnbounded(S), !.
+%
+% legalstate(_, Size):-
+%     \+blocks_limit(non), !,
+%     legalstatebounded(Size), !.
+%
+%
+% legalstateUnbounded(S):-
+%   extract(S), clean, !.
+%
+% legalstatebounded(Size):-
+%     extract(S), clean, !,
+%     blocks_limit(MaxBlocks),
+%     onSize(Size, OnSize),
+%     sum_list(OnSize, B), !,
+%     B =< MaxBlocks.
 
-legalstate(_, Size):-
-    \+blocks_limit(non), !,
-    legalstatebounded(Size), !.
-%%
+boundedstate(S,B):-
+    termsInState(S),
+    list_to_set(Terms, TermSet),
+    length(TermSet, BB),
+    BB =< B.
 
-
-
-legalstateUnbounded(S):-
+legalstate(S):-
   extract(S), clean, !.
-
-legalstatebounded(Size):-
-    extract(S), clean, !,
-    blocks_limit(MaxBlocks),
-    onSize(Size, OnSize),
-    sum_list(OnSize, B), !,
-    B =< MaxBlocks.
 
 onSize([], []):-!.
 onSize([[_,On]|Size], [On1|R]):-
@@ -222,18 +230,44 @@ onSize([[_,On]|Size], [On1|R]):-
 
 % min_num_blocks(S, N): state S has at least N blocks
 min_num_blocks(S, N):-
-    stateblocks(S, ListBlocks), !,
+    termsInState(S, ListBlocks), !,
     duplicate_term(ListBlocks, ListBlocks1), !,
     list_to_set1(ListBlocks1, SetBlocks), !,
     length(SetBlocks, N), !.
 
-% stateblocks(S, B): state S has a set of blocks B
-stateblocks([], []) :- !.
-stateblocks([cl(X)|S], [X|B]):-
-    stateblocks(S, B), !.
-stateblocks([on(X,Y)|S], [X,Y|B]):-
-    stateblocks(S, B), !.
+% termsInState(S, B): state S has a set of blocks B
+termsInState([], []) :- !.
+termsInState([cl(X)|S], [X|B]):-
+    termsInState(S, B), !.
+termsInState([on(X,Y)|S], [X,Y|B]):-
+    termsInState(S, B), !.
 
+%
+% this uses backtracking to create all specifications
+list2set([] , []).
+list2set([E|Es] , Set) :-
+    member(E, Es) ,
+    list2set(Es , Set).
+list2set([E|Es] , [E|Set] ) :-
+    maplist(mydif(E), Es),
+    list2set(Es , Set).
+
+
+
+%%
+oi(State, non):-
+    termsInState(State, Terms),
+    list_to_set(Terms, TermSet),
+    list2set(TermSet, TermUnifiedSet),
+    legalstate(State).
+    
+oi(State, B):-
+    B \= non,
+    termsInState(State, Terms),
+    list_to_set(Terms, TermSet),
+    list2set(TermSet, TermUnifiedSet),
+    legalstate(State),
+    boundedstate(State, B).
 
 %%
 printall([]):- !.

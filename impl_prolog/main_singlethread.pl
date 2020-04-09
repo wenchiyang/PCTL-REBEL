@@ -21,12 +21,64 @@ memo(Goal) :-
 experiment1 :-
     protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(10, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
+    evaluate(until(2, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
     statistics(runtime, [Stop|_]),
-    print_message(informational, exetime(Start, Stop)).
+    print_message(informational, exetime(Start, Stop)),
     noprotocol.
 
-experiment5 :-
+experimentX_iter_1 :-
+    protocol('experiments/exp1_singlethread.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(next([[on(a,b)]], >=, 0.9, Res), Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+experimentF_iter_1 :-
+    protocol('experiments/exp1_singlethread.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(until(1, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experimentU_iter_1 :-
+    protocol('experiments/exp1_singlethread.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(until(1, [[on(c,d)]],[[on(a,b)]], >=, 0.9, Res), Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+
+experiment2 :-
+    protocol('experiments/exp1_unbounded_until.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(until(100, [[on(c,d)]], [[on(a,b)]], >=, 0.9, Res), Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_inner1 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(4, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(1,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_inner2 :-
     protocol('experiments/exp5.txt'),
     statistics(runtime, [Start|_]),
     evaluate(
@@ -45,6 +97,182 @@ experiment5 :-
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)),
     noprotocol.
+
+
+
+experiment5_inner3 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(4, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(3,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+
+experiment5_inner4 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(4, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(4,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_inner5 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(4, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(5,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+
+experiment5_outer1 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(1, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(2,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_outer2 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(2, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(2,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_outer3 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(3, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(2,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_outer4 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(4, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(2,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+experiment5_outer5 :-
+    protocol('experiments/exp5.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(5, [[cl(a)]],
+            and(
+                [[on(a,b)]],
+                until(2,
+                    next([[cl(e)]], >=, 0.9, _),
+                    [[on(c,d)]],
+                    >=, 0.9, _
+                ),
+                _
+            ),
+        >=, 0.5, Res),
+    Res), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+
+
+
+
+
+
+
+
+
+
+
 
 % Syntax checking -- Do not allow [].
 % evaluate(Phi, []) :- functor(Phi, [], _), !.
@@ -128,7 +356,10 @@ valueIteration(TotalSteps, CurrentStep, InitV, Vs, Phi1s, Phi2sQs, FinalVs):-
     print_message(informational, iteration(CurrentStep)), nl,
     memo(valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs)), !,
     Vs = [CurrentVs,PreviousVs],
-    printall_format(CurrentVs), nl, nl,
+    printall_format(CurrentVs),
+    length(CurrentVs, LLL),
+    write("#abstract states: "), writeln(LLL),
+    nl, nl,
     (
     is_list(PreviousVs),
     is_list(CurrentVs),
@@ -210,8 +441,8 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %print_message(informational, stackusage(Used3)),
         length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
         write("partialQs: "), writeln([LSPQs1, LSPQs2]),
-    %printall_format(SPQs1), nl,
-    %printall_format(SPQs2), nl,
+    % printall_format(SPQs1), nl,
+    % printall_format(SPQs2), nl,
         statistics(runtime, [Stop1|_]),
         print_message(informational, partialQtime(Start1, Stop1)),
         %write("    step 1 : "), write(Step1), writeln(" s"),
@@ -243,21 +474,21 @@ getQ(SPQs1, SPQs2, Q):-
     PartialQ2 = partialQ(_,A2,_,_,_,_),
     Q1 > 0,
     A1=A2,
-    legalaction(A1),
+    legalaction(A1), % TODO can be discarded
     partialQstoQ(PartialQ1, PartialQ2, Q).
 
 partialQstoQ(partialQ(Q1,_,_,Size1,Str1,_),
              partialQ(Q2,_,S2,Size2,Str2,Sta2),
              q(Q, S2, Size2, Str2, Sta2)):-
     subsumess(Size1,Str1,Size2,Sta2), !,
-    legalstate(S2, Size2), !,
+    % legalstate(S2, Size2), !,
     Q is Q1 + Q2, !.
 
 partialQstoQ(partialQ(Q1,_,S1,Size1,Str1,Sta1),
              partialQ(Q2,_,_,Size2,Str2,_),
              q(Q, S1,Size1,Str1,Sta1)):-
     subsumess(Size2,Str2,Size1,Sta1), !,
-    legalstate(S1, Size1), !,
+    % legalstate(S1, Size1), !,
     Q is Q1 + Q2, !.
 
 getPartialQwp1Det(VFs, Phi2sQs, Phi1s, SPQs1):-
@@ -302,7 +533,6 @@ wp1_det(VFs, Phi1s, PQ) :-
     mydif(X,Y), mydif(Y,Z), mydif(X,Z),
     wpi([cl(X), cl(Z), on(X,Y)], 1.0, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
         Phi1s, VFValue, VFState, PQ).
-
 
 wp1_nondet(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
@@ -350,13 +580,18 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
     member(Phi1, Phi1s), extract(Phi1), extract(VFSTail), extract(Body),
     stateMetaData(StaSize, StaStr, StackSorted),
     mergestacks(StaStr, Glb),
-    legalstate(Glb, StaSize), !,
+    % legalstate(Glb, StaSize), !,
+    % legalstate(Glb), !,
 %%%%% Step 2A : get partial Q rules
 % Output: partialQ(NewVFValue, Act, S)
     ord_union(Head, Body, Lpp),
     cartesian_dif(VFSTail, Lpp), !,
+    %========================
+    blocks_limit(B),
+    oi(Glb, B),
+    %========================
     discountfactor(Discount),
-    NewVFValue is Prob * VFValue * Discount, !.
+    NewVFValue is Prob * VFValue * Discount.
 
 
 %%

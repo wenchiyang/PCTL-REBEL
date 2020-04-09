@@ -1,0 +1,82 @@
+Iteration 1
+
+partialQs: [2,3]
+partialQ time : 0.004 s
+       Q time : 0 s
+#abstract states: 2
+
+
+Iteration 2
+
+partialQs: [8,12]
+partialQ time : 0.008 s
+       Q time : 0.003 s
+#abstract states: 5
+
+
+Iteration 3
+
+partialQs: [22,38]
+partialQ time : 0.042 s
+       Q time : 0.01 s
+#abstract states: 8
+
+
+Iteration 4
+
+partialQs: [32,60]
+partialQ time : 0.088 s
+       Q time : 0.021 s
+#abstract states: 9
+
+
+Iteration 5
+
+partialQs: [33,63]
+partialQ time : 0.083 s
+       Q time : 0.022 s
+#abstract states: 9
+
+
+Iteration 6
+
+partialQs: [33,63]
+partialQ time : 0.088 s
+       Q time : 0.027 s
+#abstract states: 9
+
+
+Iteration 7
+
+partialQs: [33,63]
+partialQ time : 0.083 s
+       Q time : 0.022 s
+#abstract states: 9
+
+
+Iteration 8
+
+partialQs: [33,63]
+partialQ time : 0.087 s
+       Q time : 0.022 s
+#abstract states: 9
+
+
+Iteration 9
+
+partialQs: [33,63]
+partialQ time : 0.086 s
+       Q time : 0.031 s
+#abstract states: 9
+
+
+
+
+query: 
+[until,100,[[on(c,d)]],[[on(a,b)]],>=,0.9]
+
+answer: 
+[on(a,b)]
+
+
+Execution time : 0.733 s

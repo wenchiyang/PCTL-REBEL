@@ -1,0 +1,82 @@
+Iteration 1
+
+partialQs: [3,4]
+partialQ time : 0.009 s
+       Q time : 0.001 s
+#abstract states: 3
+
+
+
+
+query: 
+[next,[[cl(e)]],>=,0.9]
+
+answer: 
+[cl(e),cl(_32310),on(e,_32374)]
+[cl(_32768),cl(e),cl(_32996),on(_32768,_32876)]
+[cl(_33576),cl(_33684),on(_33576,e)]
+
+
+Iteration 1
+
+partialQs: [2,3]
+partialQ time : 0.002 s
+       Q time : 0 s
+#abstract states: 2
+
+
+Iteration 2
+
+partialQs: [26,27]
+partialQ time : 0.035 s
+       Q time : 0.014 s
+#abstract states: 5
+
+
+
+
+query: 
+[until,2,next([[cl(e)]],>=,0.9,[[cl(e),cl(_18736),on(e,_18800)],[cl(_19086),cl(e),cl(_19314),on(_19086,_19194)],[cl(_19744),cl(_19852),on(_19744,e)]]),[[on(c,d)]],>=,0.9]
+
+answer: 
+[on(c,d)]
+[cl(e),cl(c),cl(_248630),cl(d),on(e,_248694),on(c,_248992)]
+
+
+[2,2]
+
+
+query: 
+[and,[[on(a,b)]],until(2,next([[cl(e)]],>=,0.9,[[cl(e),cl(_18734),on(e,_18798)],[cl(_19084),cl(e),cl(_19312),on(_19084,_19192)],[cl(_19742),cl(_19850),on(_19742,e)]]),[[on(c,d)]],>=,0.9,[[on(c,d)],[cl(e),cl(c),cl(_25158),cl(d),on(e,_25222),on(c,_25520)]])]
+
+answer: 
+[on(a,b),on(c,d)]
+[cl(e),cl(c),cl(_25158),cl(d),on(e,_25222),on(c,_25520),on(a,b)]
+
+
+Iteration 1
+
+partialQs: [32,33]
+partialQ time : 0.036 s
+       Q time : 0.022 s
+#abstract states: 9
+
+
+
+
+query: 
+[until,1,[[cl(a)]],and([[on(a,b)]],until(2,next([[cl(e)]],>=,0.9,[[cl(e),cl(_18726),on(e,_18790)],[cl(_19076),cl(e),cl(_19304),on(_19076,_19184)],[cl(_19734),cl(_19842),on(_19734,e)]]),[[on(c,d)]],>=,0.9,[[on(c,d)],[cl(e),cl(c),cl(_20162),cl(d),on(e,_20226),on(c,_20524)]]),[[on(a,b),on(c,d)],[cl(e),cl(c),cl(_20162),cl(d),on(e,_20226),on(c,_20524),on(a,b)]]),>=,0.5]
+
+answer: 
+[on(a,b),on(c,d)]
+[cl(a),cl(e),cl(c),cl(d),on(a,b),on(e,_212918),on(c,_213126)]
+[cl(e),cl(c),cl(_213908),cl(d),on(e,_213972),on(c,_214270),on(a,b)]
+[cl(a),cl(c),cl(d),on(a,b),on(c,_214894)]
+[cl(a),cl(c),cl(e),cl(_215286),cl(_215394),on(a,b),on(c,_216320),on(e,_216022),on(_215286,d)]
+[cl(_216890),cl(a),cl(e),cl(d),cl(_216998),on(_216890,c),on(c,_217954),on(a,b),on(e,_217462)]
+[cl(e),cl(a),cl(_218544),cl(d),cl(_218652),on(e,c),on(c,_219268),on(a,b)]
+[cl(a),cl(c),cl(e),cl(_219850),cl(_219958),on(a,b),on(c,_220564),on(e,d)]
+[cl(d),cl(a),cl(e),cl(_221146),cl(_221518),on(d,c),on(c,_221892),on(a,b),on(e,_221298)]
+
+
+Execution time : 0.119 s

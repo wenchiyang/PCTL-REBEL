@@ -4,7 +4,6 @@
 mkdir experiments
 
 swipl -g experiment1 -g halt main_singlethread.pl
-#swipl -g experiment1 -g halt main_multithread.pl
-#swipl -g experiment2 -g halt main_multithread.pl
-#swipl -g experiment3 -g halt main_multithread.pl
-#swipl -g experiment1 -g halt main_multithread.pl
+# swipl -g experimentX_iter_1 -g halt main_singlethread.pl
+# swipl -g experimentF_iter_1 -g halt main_singlethread.pl
+# swipl -g experimentU_iter_1 -g halt main_singlethread.pl

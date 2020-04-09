@@ -22,7 +22,7 @@ def g(n, k):
     for i in range(n+1):
         numerator = factorial(n+k-1)
         denominator = factorial(i+k-1)
-        res += ncr(n, i) * numerator / denominator     
+        res += ncr(n, i) * numerator / denominator
     return res
 
 
@@ -54,5 +54,5 @@ def g3(n, k):
 
 
 print("10 blocks ," + str(g3(10,0)) + " states. ")
-for i in range(1, 11):
+for i in range(12, 13):
     print(str(i) + " blocks : " + str(g3(i,0)) + " states.")
