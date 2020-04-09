@@ -6,25 +6,61 @@ city_limit(non).
 discountfactor(0.9).
 convergence_threshold(0.0001).
 
-highway(berlin, brussels).
-highway(berlin, moscow).
-highway(berlin, rome).
-highway(brussels, berlin).
-highway(brussels, moscow).
+
+
 highway(brussels, paris).
 highway(brussels, rome).
-highway(moscow, berlin).
-highway(moscow, brussels).
+
 highway(paris, brussels).
-highway(rome, berlin).
+
 highway(rome, brussels).
+% highway(rome, berlin).
+% highway(berlin, rome).
+% highway(brussels, berlin).
+% highway(berlin, brussels).
+% highway(moscow, berlin).
+% highway(berlin, moscow).
+% highway(moscow, brussels).
+% highway(brussels, moscow).
 
 
-highway(copenhagen, amsterdam).
-highway(amsterdam, copenhagen).
-highway(amsterdam, brussels).
-highway(brussels, amsterdam).
-highway(paris, madrid).
-highway(madrid, paris).
-highway(berlin, prague).
-highway(prague, berlin).
+% highway(paris, madrid).
+% highway(madrid, paris).
+% highway(berlin, prague).
+% highway(prague, berlin).
+% highway(brussels, gent).
+% highway(gent, brussels).
+% highway(brussels, leuven).
+% highway(leuven, brussels).
+% highway(paris, barcelona).
+% highway(barcelona, paris).
+% highway(barcelona, madrid).
+% highway(madrid, barcelona).
+
+
+% highway(leuven, rotterdam).
+% highway(rotterdam, leuven).
+% highway(rotterdam, amsterdam).
+% highway(amsterdam, rotterdam).
+% highway(copenhagen, amsterdam).
+% highway(amsterdam, copenhagen).
+% highway(amsterdam, brussels).
+% highway(brussels, amsterdam).
+
+
+
+
+
+
+
+
+
+%
+% highway(stockholm, copenhagen).
+% highway(copenhagen, stockholm).
+% highway(madrid, lisbon).
+% highway(lisbon, madrid).
+% highway(rome, naples).
+% highway(naples, rome).
+% highway(moscow, helsinki).
+% highway(helsinki, moscow).

@@ -21,7 +21,7 @@ memo(Goal) :-
 experiment1 :-
     protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(20, [[]], [[bin(b1,paris)]], >=, 0.9, Res), Res), !,
+    evaluate(until(100, [[]], [[bin(b1,paris)]], >=, 0.9, Res), Res), !,
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)).
     noprotocol.
@@ -110,7 +110,9 @@ valueIteration(TotalSteps, CurrentStep, InitV, Vs, Phi1s, Phi2sQs, FinalVs):-
     print_message(informational, iteration(CurrentStep)), nl,
     memo(valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs)), !,
     Vs = [CurrentVs,PreviousVs],
-    printall_format(CurrentVs), nl, nl,
+    % printall_format(CurrentVs),
+    length(CurrentVs, LLL), write("#abstract states: "), writeln(LLL),
+    nl, nl,
     (
     is_list(PreviousVs),
     is_list(CurrentVs),
@@ -271,7 +273,7 @@ wp1_det(load, VFs, Phi1s, PQ) :-
 wp1_det(drive, VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
     mydif(C1,C2), mydif(T,C1), mydif(T,C2),
-    %highway(C1,C2),
+    highway(C1,C2),
     wpi([tin(T,C1)], 1.0, drive(T,C1), [tin(T,C2)],
         Phi1s, VFValue, VFState, PQ).
 
@@ -292,7 +294,7 @@ wp1_nondet(load, VFs, Phi1s, PQ) :-
 wp1_nondet(drive, VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
     mydif(C1,C2), mydif(T,C1), mydif(T,C2),
-    %highway(C1,C2),
+    highway(C1,C2),
     wpi([tin(T,C1)], 1.0, drive(T,C1), [tin(T,C2)],
         Phi1s, VFValue, VFState, PQ).
 
