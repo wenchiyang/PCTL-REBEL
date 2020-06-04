@@ -1,7 +1,7 @@
 :- module(util, [subsumess/4, subsetgen/2, predInList/3, extract/1,
 stateMetaData/3, mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/4, printall_format/1, filter/4,
-getVFStates/2, printall/1, andstate/3, legalstate/2, oi/1, legalstate/1,
+getVFStates/2, printall/1, andstate/3, oi/2, legalstate/1,
 boundedstate/2]).
 
 :- use_module(setting).
@@ -260,7 +260,7 @@ oi(State, non):-
     list_to_set(Terms, TermSet),
     list2set(TermSet, TermUnifiedSet),
     legalstate(State).
-    
+
 oi(State, B):-
     B \= non,
     termsInState(State, Terms),
@@ -279,6 +279,9 @@ printall([E|R]):-
 printall_format([]):-!.
 printall_format([q(Prob, S, Size, _, _)|R]):-
     writeln(q(Prob,S,Size)),
+    printall_format(R),!.
+printall_format([q(Prob, A, S, _, _, _)|R]):-
+    writeln(q(Prob,A,S)),
     printall_format(R),!.
 printall_format([partialQ(Q1,A1,S1,Size1,_,_)|R]):-
     writeln(partialQ(Q1,A1,S1,Size1)),

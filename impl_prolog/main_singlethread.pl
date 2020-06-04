@@ -21,10 +21,11 @@ memo(Goal) :-
 experiment1 :-
     protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(2, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
+    evaluate(until(1, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)),
     noprotocol.
+
 
 experimentX_iter_1 :-
     protocol('experiments/exp1_singlethread.txt'),
@@ -441,7 +442,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %print_message(informational, stackusage(Used3)),
         length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
         write("partialQs: "), writeln([LSPQs1, LSPQs2]),
-    % printall_format(SPQs1), nl,
+    % printall_format(SPQs1), nl,nl,
     % printall_format(SPQs2), nl,
         statistics(runtime, [Stop1|_]),
         print_message(informational, partialQtime(Start1, Stop1)),
@@ -449,6 +450,8 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     %%% step 2: combining, producing Q rules
         statistics(runtime, [Start2|_]),
     findall_Qrules(Q, Phi2sQs, getQ(SPQs1, SPQs2, Q), QRules), !,
+    allqrulestest(Q, getQtest(SPQs1, SPQs2, Q), RRR),
+    printall_format(RRR),
     %findall(Q, getQ(SPQs1, SPQs2, Q), QRules), !,
         statistics(runtime, [Stop2|_]),
         %write("    step 2 : "), write(Step2), writeln(" s"),
@@ -463,7 +466,32 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     qTransfer(QRules, NewVFs),
     !.
 
+% =================test====================
+getQtest(SPQs1, SPQs2, Q):-
+    % try out all partialQ combinations from wp1 and wp2
+    member(PartialQ1, SPQs1),
+    member(PartialQ2, SPQs2),
+    PartialQ1 = partialQ(Q1,A1,_,_,_,_),
+    PartialQ2 = partialQ(_,A2,_,_,_,_),
+    % Q1 > 0,
+    A1=A2,
+    legalaction(A1), % TODO can be discarded
+    partialQstoQtest(PartialQ1, PartialQ2, Q).
 
+partialQstoQtest(partialQ(Q1,_,_,Size1,Str1,_),
+             partialQ(Q2,A2,S2,Size2,Str2,Sta2),
+             q(Q,A2,S2, Size2, Str2, Sta2)):-
+    subsumess(Size1,Str1,Size2,Sta2), !,
+    % legalstate(S2, Size2), !,
+    Q is Q1 + Q2, !.
+
+partialQstoQtest(partialQ(Q1,A1,S1,Size1,Str1,Sta1),
+             partialQ(Q2,_,_,Size2,Str2,_),
+             q(Q,A1,S1,Size1,Str1,Sta1)):-
+    subsumess(Size2,Str2,Size1,Sta1), !,
+    % legalstate(S1, Size1), !,
+    Q is Q1 + Q2, !.
+% =========================================
 % use backtracking to generate all Q rules from all possible
 % combinations from partialQ1s and PartialQ2s
 getQ(SPQs1, SPQs2, Q):-
@@ -472,7 +500,7 @@ getQ(SPQs1, SPQs2, Q):-
     member(PartialQ2, SPQs2),
     PartialQ1 = partialQ(Q1,A1,_,_,_,_),
     PartialQ2 = partialQ(_,A2,_,_,_,_),
-    Q1 > 0,
+    % Q1 > 0,
     A1=A2,
     legalaction(A1), % TODO can be discarded
     partialQstoQ(PartialQ1, PartialQ2, Q).
@@ -536,7 +564,7 @@ wp1_det(VFs, Phi1s, PQ) :-
 
 wp1_nondet(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
-    VFValue > 0,
+    % VFValue > 0,
     mydif(X,Y), mydif(Y,Z), mydif(X,Z),
     wpi([cl(X), cl(Z), on(X,Y)], 0.9, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
         Phi1s, VFValue, VFState, PQ).
@@ -607,6 +635,19 @@ qTransfer([q(Q,S,_,_,_)|Qs],[v(Q,S)|Vs]):-
     qTransfer(Qs, Vs), !.
 
 
+allqrulestest(X, Goal, Results):-
+    State = state([]),
+    (Goal,
+    % writeln(X),nl,
+    arg(1, State, S0),
+    append(S0, [X], S),
+    % printall(S),
+    % sortByQValue(S, SortedS),
+    nb_setarg(1, State, S),
+    fail
+    ;
+    arg(1, State, Results)
+    ).
 %%
 % findall_Qrules(Q, getQ(SPQs1, SPQs2, Q), QRules), !,
 findall_Qrules(X, InitQs, Goal, Results) :-
