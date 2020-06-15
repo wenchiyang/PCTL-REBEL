@@ -1,3 +1,4 @@
+:- module(main_singlethread, [evaluate/2]).
 :- use_module(library(chr)).
 :- use_module(precond).
 :- use_module(sorting).
@@ -34,6 +35,7 @@ experimentX_iter_1 :-
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)),
     noprotocol.
+
 experimentF_iter_1 :-
     protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
@@ -450,8 +452,8 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     %%% step 2: combining, producing Q rules
         statistics(runtime, [Start2|_]),
     findall_Qrules(Q, Phi2sQs, getQ(SPQs1, SPQs2, Q), QRules), !,
-    allqrulestest(Q, getQtest(SPQs1, SPQs2, Q), RRR),
-    printall_format(RRR),
+    % allqrulestest(Q, getQtest(SPQs1, SPQs2, Q), RRR),
+    % printall_format(RRR),
     %findall(Q, getQ(SPQs1, SPQs2, Q), QRules), !,
         statistics(runtime, [Stop2|_]),
         %write("    step 2 : "), write(Step2), writeln(" s"),
@@ -519,11 +521,11 @@ partialQstoQ(partialQ(Q1,_,S1,Size1,Str1,Sta1),
     % legalstate(S1, Size1), !,
     Q is Q1 + Q2, !.
 
-getPartialQwp1Det(VFs, Phi2sQs, Phi1s, SPQs1):-
-    garbage_collect,
-    findall_partialQsDet(PQ1, Phi2sQs, wp1(VFs,Phi1s,PQ1), SPQs1), !,
-    garbage_collect,
-    !.
+% getPartialQwp1Det(VFs, Phi2sQs, Phi1s, SPQs1):-
+%     garbage_collect,
+%     findall_partialQsDet(PQ1, Phi2sQs, wp1(VFs,Phi1s,PQ1), SPQs1), !,
+%     garbage_collect,
+%     !.
 
 getPartialQwp1(VFs, Phi1s, SPQs1):-
     garbage_collect,
@@ -544,9 +546,9 @@ wp1(VFs, Phi1s, PQ):-
     nonDetActions(nondet), !,
     wp1_nondet(VFs, Phi1s, PQ).
 
-wp1(VFs, Phi1s, PQ):-
-    nonDetActions(det), !,
-    wp1_det(VFs, Phi1s, PQ).
+% wp1(VFs, Phi1s, PQ):-
+%     nonDetActions(det), !,
+%     wp1_det(VFs, Phi1s, PQ).
 
 wp2(VFs, Phi1s, PQ):-
     nonDetActions(nondet), !,
@@ -555,12 +557,12 @@ wp2(VFs, Phi1s, PQ):-
 
 %%
 
-wp1_det(VFs, Phi1s, PQ) :-
-    member(v(VFValue, VFState), VFs),
-    VFValue > 0,
-    mydif(X,Y), mydif(Y,Z), mydif(X,Z),
-    wpi([cl(X), cl(Z), on(X,Y)], 1.0, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
-        Phi1s, VFValue, VFState, PQ).
+% wp1_det(VFs, Phi1s, PQ) :-
+%     member(v(VFValue, VFState), VFs),
+%     VFValue > 0,
+%     mydif(X,Y), mydif(Y,Z), mydif(X,Z),
+%     wpi([cl(X), cl(Z), on(X,Y)], 1.0, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
+%         Phi1s, VFValue, VFState, PQ).
 
 wp1_nondet(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
@@ -575,7 +577,6 @@ wp2_nondet(VFs, Phi1s, PQ) :-
     wpi([cl(X), cl(Y), on(X,Z)], 0.1, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
         Phi1s, VFValue, VFState, PQ).
 
-mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
 
 % Takes an action rule "ActionHead <----Prob:[Act]---- ActionBody"
 % and a value function "VFValue <----- VFState"
@@ -586,7 +587,6 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState,
     % get SubVFState
     predInList(SubH, cl, ClSubH),
     predInList(SubH, on, OnSubH),
-
     %length(ClSubH, LClSubH), length(OnSubH, LOnSubH),
     %% SubVFState=[ClSpp, OnSpp] and has structure [LClSubH, LOnSubH]
     structsubset(SubH, VFState, ClSpp, OnSpp), %%%% This can be optimized!!!!!
@@ -688,19 +688,19 @@ addQ([QRule1|T0], New_QRule, [QRule1|T]) :-
     addQ(T0, New_QRule, T), !.
 
 
-findall_partialQsDet(X, InitQs, Goal, Results) :-
-    State = state(InitQs),
-    (  Goal,
-       arg(1, State, S0),
-
-       addpartialQ(S0, X, S),
-
-       sortByQValue(S, SortedS),
-       nb_setarg(1, State, SortedS),
-       fail
-    ;
-       arg(1, State, Results)
-    ).
+% findall_partialQsDet(X, InitQs, Goal, Results) :-
+%     State = state(InitQs),
+%     (  Goal,
+%        arg(1, State, S0),
+%
+%        addpartialQ(S0, X, S),
+%
+%        sortByQValue(S, SortedS),
+%        nb_setarg(1, State, SortedS),
+%        fail
+%     ;
+%        arg(1, State, Results)
+%     ).
 
 
 % assume List_Of_QRules is sorted
@@ -746,46 +746,3 @@ findall_partialQs(X, Goal, Results) :-
 
 legalaction(move(X,Y,Z)):-
   X\=Y, Y\=Z, Z\=X, !.
-
-
-
-
-message_hook(exetime(Start, Stop), informational, _):-
-  Time is (Stop-Start)/1000,
-  write("Execution time : "),
-  write(Time),
-  writeln(" s").
-
-message_hook(iteration(CurrentStep), informational, _):-
-    write("Iteration "),
-    writeln(CurrentStep).
-
-message_hook(stackusage(Used), informational, _):-
-    U is Used/1000000,
-    write(U),
-    writeln(" mb").
-
-message_hook(partialQtime(Start,Stop), informational, _):-
-    Time is (Stop-Start)/1000,
-    write("partialQ time : "),
-    write(Time),
-    writeln(" s").
-
-message_hook(qtime(Start,Stop), informational, _):-
-    Time is (Stop-Start)/1000,
-    write("       Q time : "),
-    write(Time),
-    writeln(" s").
-
-
-without_last(WithLast, WithoutLast) :-
-    length(WithLast, L),
-    length(WithoutLast, L1),
-    L1 is L-1,
-    prefix(WithoutLast, WithLast).
-
-message_hook(phistates(Phi, PhiStates), informational, _):-
-  Phi =.. Operation,
-  without_last(Operation, Output), nl, nl,
-  writeln("query: "), writeln(Output), nl,
-  writeln("answer: "), printall(PhiStates), nl, nl.
