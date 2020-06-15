@@ -2,9 +2,13 @@
 stateMetaData/3, mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/4, printall_format/1, filter/4,
 getVFStates/2, printall/1, andstate/3, oi/2, legalstate/1,
-boundedstate/2]).
+boundedstate/2, mydif/2, thetasubsumes/2]).
 
 :- use_module(setting).
+
+
+mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
+
 
 % subsumess/4: check whether S1 subsumes S2
 % S2 needs to be given, otherwise this enters an infinite loop
@@ -15,6 +19,10 @@ boundedstate/2]).
 subsumess(Size1,Str1,Size2,Sta2):-
     checkstacknums(Size1, Size2), !,
     smartsubset(Size1, Str1, Sta2), !.
+
+thetasubsumes(C1,C2,Size1,Size2):-
+    % checkstacknums(Size1, Size2), !,
+    \+(\+((numbervars(C2,999,N,[attvar(bind)]), subset(C1,C2)))).
 
 % checkstacknums/2: succeeds iff StaNum1 subsumes StaNum2
 % this serves as an optimization (not necessary)
