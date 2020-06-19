@@ -1,6 +1,6 @@
 :- module(util, [subsetgen/2, predInList/3, extract/1,
 mergestacks/2, constructAbsorbingVFs/2,
-constructAbsorbingQs/2, structsubset/4, printall_format/1, filter/4,
+constructAbsorbingQs/2, structsubset/5, filter/4, 
 getVFStates/2, printall/1, andstate/3, oi/2, legalstate/1,
 boundedstate/2, mydif/2, thetasubsumes/2, getallstuff/1, cartesian_dif/2]).
 
@@ -33,7 +33,7 @@ mysubset([], _) :- !.
 mysubset([E|R], Set) :-
     member(E, Set),
     mysubset(R, Set).
-    
+
 % % checkstacknums/2: succeeds iff StaNum1 subsumes StaNum2
 % % this serves as an optimization (not necessary)
 % checkstacknums([], _) :- !.
@@ -86,13 +86,24 @@ extract([E|L]):-
 % S1 is an state template (list of nonground cl/1 and on/2)
 % S2 is a state
 % output: ClSubS2, OnSubS2
-structsubset(S1, S2, ClSubS2, OnSubS2):-
-    duplicate_term(S1, SubS2),
-    append(ClSubS2, OnSubS2, SubS2),
+% structsubset(S1, S2, ClSubS2, OnSubS2):-
+%     duplicate_term(S1, SubS2),
+%     append(ClSubS2, OnSubS2, SubS2),
+%     predInList(S2, cl, ClS2),
+%     predInList(S2, on, OnS2),
+%     subsetgen(ClS2, ClSubS2),
+%     subsetgen(OnS2, OnSubS2).
+
+structsubset(LClSubH, LOnSubH, S2, ClSubS2, OnSubS2):-
+    % TODO: X\=Y, Y\=Z, Z\=X
     predInList(S2, cl, ClS2),
     predInList(S2, on, OnS2),
+    length(ClSubS2, LClSubH),
+    length(OnSubS2, LOnSubH),
     subsetgen(ClS2, ClSubS2),
     subsetgen(OnS2, OnSubS2).
+
+
 
 % take(OldState, [ClL, OnL], NewState): NewState contains the first
 % ClL cl/1 and the first OnL on/2 of OldState
@@ -304,14 +315,15 @@ printall([E|R]):-
     writeln(E),
     printall(R),!.
 
+
 %%
-printall_format([]):-!.
-printall_format([q(Q, S)|R]):-
-    writeln(q(Q,S)),
-    printall_format(R),!.
-printall_format([partialQ(Q,A,S)|R]):-
-    writeln(partialQ(Q,A,S)),
-    printall_format(R),!.
-printall_format([v(Q,S)|R]):-
-    writeln(v(Q,S)),
-    printall_format(R),!.
+% printsp([]):-!.
+% printsp([v(0.81,S)|R]):-
+%     S = [cl(b),cl(DD),cl(DD),on(a,_51264),on(DD,a)],
+%     mydif(DD, c),
+%     get_attr(DD, dif, Value),
+%     writeln(v(0.81,S)),
+%     writeln(Value),
+%     printsp(R), !.
+% printsp([v(_,_)|R]):-
+%     printsp(R), !.

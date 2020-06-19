@@ -8,15 +8,21 @@
 :- use_module(setting).
 %:- set_prolog_flag(optimize,full).
 
-:- dynamic memo_/1.
-% memo/1:
-% if Goal has been executed, use the result,
-% otherwise execute Goal and insert the result into the database
-memo(Goal) :-
-        (   memo_(Goal)
-        ->  true
+% :- dynamic memo_/1.
+% % memo/1:
+% % if Goal has been executed, use the result,
+% % otherwise execute Goal and insert the result into the database
+% memo(Goal) :-
+%         (   memo_(Goal)
+%         ->  true
+%         ;   once(Goal),
+%             assertz(memo_(Goal))
+%         ).
+memo(Step, Goal) :-
+        (   recorded(Step,Goal)
+        -> true
         ;   once(Goal),
-            assertz(memo_(Goal))
+            recorda(Step, Goal)
         ).
 
 experiment1 :-
@@ -26,7 +32,6 @@ experiment1 :-
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)),
     noprotocol.
-
 
 experimentX_iter_1 :-
     protocol('experiments/exp1_singlethread.txt'),
@@ -101,8 +106,6 @@ experiment5_inner2 :-
     print_message(informational, exetime(Start, Stop)),
     noprotocol.
 
-
-
 experiment5_inner3 :-
     protocol('experiments/exp5.txt'),
     statistics(runtime, [Start|_]),
@@ -122,7 +125,6 @@ experiment5_inner3 :-
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)),
     noprotocol.
-
 
 experiment5_inner4 :-
     protocol('experiments/exp5.txt'),
@@ -314,7 +316,7 @@ and([E1|States1], States2, Res):-
 until(Steps, Phi1s, Phi2s, Op, Threshold, SortedStates) :-
     maplist(constructAbsorbingVFs,Phi2s,InitV), !,
     maplist(constructAbsorbingQs,Phi2s,Phi2sQs), !,
-    vi(Steps, 1, InitV, _, [], Phi1s, Phi2sQs, FinalVs), !,
+    vi(Steps, 1, InitV, _, Phi1s, Phi2sQs, FinalVs), !,
     % TODO combine filter and getVFStates to optimize
     filter(FinalVs, Op, Threshold, NewVN), !,
     getVFStates(NewVN, SortedStates),
@@ -323,7 +325,7 @@ until(Steps, Phi1s, Phi2s, Op, Threshold, SortedStates) :-
 
 next(Phi2s, Op, Threshold, SortedStates) :-
     maplist(constructAbsorbingVFs,Phi2s,InitV), !,
-    vi(1, 1, InitV, _, [], [[]], [], FinalVs), !,
+    vi(1, 1, InitV, _,[[]], [], FinalVs), !,
     filter(FinalVs, Op, Threshold, NewVN), !,
     getVFStates(NewVN, SortedStates),
     %list_to_set1(States, SortedStates),
@@ -335,65 +337,47 @@ convergence([v(Q1, _)|PreviousVs], [v(Q2, _)|CurrentVs], ConvergenceThreshold) :
     Residual < ConvergenceThreshold,
     convergence(PreviousVs,CurrentVs,ConvergenceThreshold), !.
 
-% base case 1: when the step bound is met
-vi(TotalSteps, CurrentStep, _, _, FinalVS, _, _, FinalVS):-
-    CurrentStep =:= TotalSteps + 1, !.
+% % case 1: stop when the step bound is met
+vi(TotalSteps, CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs, FinalVs):-
+    TotalSteps =:= CurrentStep,
+    valueIteration(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs), nl,
+    FinalVs = CurrentVs, !.
 
-vi(TotalSteps, CurrentStep, InitV, CurrentVs, PreviousVs, Phi1s, Phi2sQs, FinalVs):-
-    valueIteration(TotalSteps, CurrentStep, InitV, [CurrentVs,PreviousVs], Phi1s, Phi2sQs, FinalVs), !.
+vi(TotalSteps, CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs, FinalVs):-
+    valueIteration(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs), nl,
+    % case 2: stop when the value function converges TODO to be checked
+    (
+        PreviousStep is CurrentStep - 1,
+        memo(PreviousStep, valueIteration_helper(PreviousStep, _, PreviousVs, _, _)),
+        is_list(PreviousVs), is_list(CurrentVs),
+        length(PreviousVs, L), length(CurrentVs, L),
+        convergence_threshold(ConvergenceThreshold),
+        convergence(PreviousVs, CurrentVs, ConvergenceThreshold)
+    ->
+        CurrentVs=FinalVs
+    ;
+    % case 3: calculate the new iteration
+        NextStep is CurrentStep + 1,
+        vi(TotalSteps, NextStep, InitV, _, Phi1s, Phi2sQs, FinalVs)
+    ),
+    !.
 
 
-valueIteration(TotalSteps, CurrentStep, InitV, Vs, Phi1s, Phi2sQs, FinalVs):-
-    RemoveMemoryIndex is CurrentStep - 2,
-    retractall(memo_(valueIteration_helper(RemoveMemoryIndex,_,_,_,_))),
+valueIteration(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs):-
+    % RemoveMemoryIndex is CurrentStep - 2,
+    % retractall(memo_(valueIteration_helper(RemoveMemoryIndex,_,_,_,_))),
     print_message(informational, iteration(CurrentStep)), nl,
-    memo(valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs)), !,
-    Vs = [CurrentVs,PreviousVs],
-    printall_format(CurrentVs),
+    memo(CurrentStep, valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs)), !,
+    printall(CurrentVs),
     length(CurrentVs, LLL),
     write("#abstract states: "), writeln(LLL),
     nl, nl,
-    (
-    is_list(PreviousVs),
-    is_list(CurrentVs),
-    length(PreviousVs, L1),
-    length(CurrentVs, L2),
-    L1 == L2,
-    convergence_threshold(ConvergenceThreshold),
-    convergence(PreviousVs,CurrentVs, ConvergenceThreshold)
-    ->
-        CurrentVs=FinalVs, !
-    ;
-    NextStep is CurrentStep + 1,
-    vi(TotalSteps, NextStep, InitV, _, CurrentVs, Phi1s, Phi2sQs, FinalVs),
-    !
-    ), !.
+    !.
 
-% valueIteration(TotalSteps, CurrentStep, _, [_, FinalVS], _, _, FinalVS) :-
-%     CurrentStep =:= TotalSteps + 1, !.
-%
-% valueIteration(TotalSteps, CurrentStep, InitV, Vs, Phi1s, Phi2sQs, FinalVs):-
-%     RemoveMemoryIndex is CurrentStep - 2,
-%     retractall(memo_(valueIteration_helper(RemoveMemoryIndex,_,_,_,_))),
-%     print_message(informational, iteration(CurrentStep)),
-%     memo(valueIteration_helper(CurrentStep, InitV, Vs, Phi1s, Phi2sQs)), !,
-%     Vs = [CurrentVs,PreviousVs],
-%     printall_format(CurrentVs), nl, nl,
-%     (
-%     is_list(PreviousVs),
-%     convergence(PreviousVs,CurrentVs,0.0001)
-%     ->
-%     CurrentVs=FinalVs, !
-%     ;
-%     NextStep is CurrentStep + 1,
-%     valueIteration(TotalSteps, NextStep, InitV, [_, CurrentVs], Phi1s, Phi2sQs, FinalVs),
-%     !
-%     ), !.
-%
 valueIteration_helper(0, InitV, InitV, _, _):-!.
 valueIteration_helper(CurrentStep, InitV, CurrentV, Phi1s, Phi2sQs):-
     PreviousStep is CurrentStep-1,
-    memo(valueIteration_helper(PreviousStep, InitV, PreviousV, Phi1s, Phi2sQs)),
+    memo(PreviousStep, valueIteration_helper(PreviousStep, InitV, PreviousV, Phi1s, Phi2sQs)),
     oneIteration(PreviousV, CurrentV, Phi1s, Phi2sQs),
     !.
 
@@ -404,7 +388,6 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     getPartialQwp1Det(VFs1, Phi2sQs, Phi1s, SPQs1), !,
         length(SPQs1, LSPQs1),
         write("partialQs: "), writeln([LSPQs1]),
-    %printall_format(SPQs1), nl,
         statistics(runtime, [Stop1|_]),
         print_message(informational, partialQtime(Start1, Stop1)),
     %%% step 2: combining, producing Q rules
@@ -412,7 +395,6 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     %list_to_set1(SPQs1, QRules), !,
         statistics(runtime, [Stop2|_]),
         print_message(informational, qtime(Start2,Stop2)),
-    %printall(SPQs1),
     qTransfer(SPQs1, NewVFs),
     !.
 
@@ -434,8 +416,6 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %print_message(informational, stackusage(Used3)),
         length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
         write("partialQs: "), writeln([LSPQs1, LSPQs2]),
-    % printall_format(SPQs1), nl,nl,
-    % printall_format(SPQs2), nl,
         statistics(runtime, [Stop1|_]),
         print_message(informational, partialQtime(Start1, Stop1)),
         %write("    step 1 : "), write(Step1), writeln(" s"),
@@ -452,7 +432,6 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %garbage_collect,
     %%% step 3: filtering, producing value functions
         %statistics(runtime, [Start3|_]),
-    %printall(QRules),
     qTransfer(QRules, NewVFs),
     !.
 
@@ -462,8 +441,8 @@ getQ(SPQs1, SPQs2, Qrule):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
-    PartialQ1 = partialQ(Q1,A1,S1),
-    PartialQ2 = partialQ(_,A2,S2),
+    PartialQ1 = partialQ(Q1,A1,_),
+    PartialQ2 = partialQ(_,A2,_),
     % Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, Qrule).
@@ -552,43 +531,6 @@ wp2_nondet(VFs, Phi1s, PQ) :-
 
 % Takes an action rule "ActionHead <----Prob:[Act]---- ActionBody"
 % and a value function "VFValue <----- VFState"
-% wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
-%     % get a subH
-%     subsetgen(Head, SubH),
-%     % get SubVFState
-%     predInList(SubH, cl, ClSubH),
-%     predInList(SubH, on, OnSubH),
-%     %% SubVFState=[ClSpp, OnSpp] and has structure [LClSubH, LOnSubH]
-%     structsubset(SubH, VFState, ClSpp, OnSpp), %%%% This can be optimized!!!!!
-%
-%     permutation(ClSubH, ClSubHp),
-%     ClSubHp = ClSpp,
-%     permutation(OnSubH, OnSubHp),
-%     OnSubHp = OnSpp,
-%     append(ClSubHp, OnSubHp, SubHp),
-%
-%     % if \theta exists
-%     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
-%     ord_subtract(VFStateTT, SubHpTT, VFSTail),
-%     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-%              partialQ(Q,A,S)),
-%      (
-%           % SubH = [cl(a), cl(b)],
-%           SubH \= [],
-%           Q = 0.81
-%           ->
-%               writeln(VFStateTT),
-%               writeln(SubHpTT),
-%               writeln(VFSTail),
-%               writeln(Body),
-%               writeln(partialQ(Q,S)),
-%               writeln(headbody(Head, VFSTail, Body)), nl, nl, nl
-%           ;
-%               true
-%           )
-%     .
-
-
 %%%%% Step 1 : get weakest precondition
 wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     % get a subH
@@ -596,8 +538,9 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     % get SubVFState
     predInList(SubH, cl, ClSubH),
     predInList(SubH, on, OnSubH),
-    structsubset(SubH, VFState, ClSpp, OnSpp), %%%% BUG
-
+    length(ClSubH, LClSubH), length(OnSubH, LOnSubH),
+    structsubset(LClSubH, LOnSubH, VFState, ClSpp, OnSpp), %%%% BUG
+    % structsubset(SubH, VFState, ClSpp, OnSpp), %%%% BUG
     % create all possible \theta
     permutation(ClSubH, ClSubHp),
     ClSubHp = ClSpp,
@@ -605,34 +548,11 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     OnSubHp = OnSpp,
     append(ClSubHp, OnSubHp, SubHp),
 
-    % create VFSTail
+    % create VFSTail using \theta
     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
     ord_subtract(VFStateTT, SubHpTT, VFSTail),
-
     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-             partialQ(Q,A,S)),
-    (
-    S = [cl(a),cl(XX),on(a,YY),on(XX,b)]
-    ->
-        writeln(S),
-        writeln(A),
-        writeln(VFState), nl,nl
-        ; true
-    )
-     % (
-     % SubH = [cl(a), cl(b)],
-     % % SubH \= [],
-     % Q = 0.81
-     % ->
-     %     writeln(VFState),
-     %     writeln(SubH),
-     %     writeln(VFSTail),
-     %     writeln(Body),
-     %     writeln(partialQ(Q,S)),
-     %     writeln(headbody(Head, VFSTail, Body)), nl, nl, nl
-     % ;
-     %     true
-     % )
+             partialQ(Q,A,S))
     .
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
@@ -644,7 +564,7 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
     sort(Head, HeadTT), sort(Body, BodyTT),
     ord_union(HeadTT, BodyTT, Lpp),
 
-    cartesian_dif(VFSTail, Lpp), !,
+    cartesian_dif(VFSTail, Lpp),
     %========================
     % blocks_limit(B),
     % oi(Glb, B),
@@ -668,7 +588,6 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     % addQ(S0, X, S),
     addQ(S0, X, S),
     sortByQValue(S, SortedS),
-    % printall_format(SortedS), nl, nl,
     nb_setarg(1, State, SortedS),
     fail
     ;

@@ -9,13 +9,54 @@
 ex :-
     % protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(4, [[]], [[on(a,b)]], >=, 0.7, Res), Res), !,
+    evaluate(until(3, [[]], [[on(a,b)]], >=, 0.8, Res), Res), !,
     statistics(runtime, [Stop|_]),
-    % Res = [_,_,_,_,_,_,R|_],
+    % Res = [_,_,_,R|_],
     print_message(informational, exetime(Start, Stop)).
-
     % noprotocol.
 
+%%
+%%
+% Iteration 1
+%
+% partialQs: [3,3]
+% partialQ time : 0.008 s
+%        Q time : 0.001 s
+% Iteration 2
+%
+% partialQs: [17,17]
+% partialQ time : 0.005 s
+%        Q time : 0.027 s
+% Iteration 3
+%
+% partialQs: [50,50]
+% partialQ time : 0.037 s
+%        Q time : 0.304 s
+% Iteration 4
+%
+% partialQs: [122,122]
+% partialQ time : 0.306 s
+%        Q time : 3.063 s
+% Iteration 5
+%
+% partialQs: [233,233]
+% partialQ time : 1.814 s
+%        Q time : 21.378 s
+% Iteration 6
+%
+% partialQs: [383,383]
+% partialQ time : 9.084 s
+%        Q time : 113.55 s
+%
+% Iteration 7
+%
+% partialQs: [572,572]
+% partialQ time : 38.943 s
+%        Q time : 493.808 s
+% Iteration 8
+%
+% partialQs: [800,800]
+% partialQ time : 152.299 s
 
 
 message_hook(exetime(Start, Stop), informational, _):-
