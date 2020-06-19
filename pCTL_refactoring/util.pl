@@ -1,14 +1,13 @@
 :- module(util, [subsetgen/2, predInList/3, extract/1,
 mergestacks/2, constructAbsorbingVFs/2,
-constructAbsorbingQs/2, structsubset/5, filter/4, 
+constructAbsorbingQs/2, structsubset/3, filter/4,
 getVFStates/2, printall/1, andstate/3, oi/2, legalstate/1,
-boundedstate/2, mydif/2, thetasubsumes/2, getallstuff/1, cartesian_dif/2]).
+thetasubsumes/2, getallstuff/1, cartesian_dif/2,
+printsp/1]).
 
 :- use_module(sorting).
 :- use_module(setting).
 
-
-mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
 
 %%
 cartesian_dif([], _):- !.
@@ -16,18 +15,17 @@ cartesian_dif([E|L1], L2):-
     maplist(mydif(E), L2), !,
     cartesian_dif(L1,L2), !.
 
-% % subsumess/4: check whether S1 subsumes S2
-% % S2 needs to be given, otherwise this enters an infinite loop
-% % Size1/Size2: a list of stack structures, e.g. [[0,2],[1,3]] represents
-% % two stacks, first stack with 2 blocks without a clear top block,
-% % second stack with 3 stacks with a clear top block
-% % Size1/Size2 is sorted
-% subsumess(Size1,Str1,Size2,Sta2):-
-%     checkstacknums(Size1, Size2), !,
-%     smartsubset(Size1, Str1, Sta2), !.
 
-thetasubsumes(C1,C2):-
-    \+(\+((numbervars(C2,999,N,[attvar(bind)]), mysubset(C1,C2)))).
+thetasubsumes(S1,S2):-
+    % predInList(S1, cl, ClS1),length(ClS1, LClS1),
+    % predInList(S1, on, OnS1),length(OnS1, LOnS1),
+    % predInList(S2, cl, ClS2),length(ClS2, LClS2),
+    % predInList(S2, on, OnS2),length(OnS2, LOnS2),
+    % LClS1 =< LClS2, LOnS1 =<LOnS2,
+    \+(\+((
+        numbervars(S2,999,_,[attvar(bind)]),
+        mysubset(S1,S2)
+    ))).
 
 mysubset([], _) :- !.
 mysubset([E|R], Set) :-
@@ -86,22 +84,28 @@ extract([E|L]):-
 % S1 is an state template (list of nonground cl/1 and on/2)
 % S2 is a state
 % output: ClSubS2, OnSubS2
-% structsubset(S1, S2, ClSubS2, OnSubS2):-
-%     duplicate_term(S1, SubS2),
-%     append(ClSubS2, OnSubS2, SubS2),
+
+% structsubset(LClSubH, LOnSubH, S2, ClSubS2, OnSubS2):-
 %     predInList(S2, cl, ClS2),
 %     predInList(S2, on, OnS2),
+%     length(ClSubS2, LClSubH),
+%     length(OnSubS2, LOnSubH),
 %     subsetgen(ClS2, ClSubS2),
 %     subsetgen(OnS2, OnSubS2).
 
-structsubset(LClSubH, LOnSubH, S2, ClSubS2, OnSubS2):-
-    % TODO: X\=Y, Y\=Z, Z\=X
+structsubset(SubH, S2, SubHp):-
+    predInList(SubH, cl, ClSubH), length(ClSubH, LClSubH),
+    predInList(SubH, on, OnSubH), length(OnSubH, LOnSubH),
     predInList(S2, cl, ClS2),
     predInList(S2, on, OnS2),
-    length(ClSubS2, LClSubH),
-    length(OnSubS2, LOnSubH),
-    subsetgen(ClS2, ClSubS2),
-    subsetgen(OnS2, OnSubS2).
+    length(ClSubS2, LClSubH), subsetgen(ClS2, ClSubS2),
+    length(OnSubS2, LOnSubH), subsetgen(OnS2, OnSubS2),
+    % create all possible \theta
+    permutation(ClSubH, ClSubHp),
+    ClSubHp = ClSubS2,
+    permutation(OnSubH, OnSubHp),
+    OnSubHp = OnSubS2,
+    append(ClSubHp, OnSubHp, SubHp).
 
 
 
@@ -254,19 +258,19 @@ andstate(_, _, []):-!.
 %     sum_list(OnSize, B), !,
 %     B =< MaxBlocks.
 
-boundedstate(S,B):-
-    termsInState(S),
-    list_to_set(Terms, TermSet),
-    length(TermSet, BB),
-    BB =< B.
+% boundedstate(S,B):-
+%     termsInState(S),
+%     list_to_set(Terms, TermSet),
+%     length(TermSet, BB),
+%     BB =< B.
 
 legalstate(S):-
   extract(S), clean, !.
 
-onSize([], []):-!.
-onSize([[_,On]|Size], [On1|R]):-
-    On1 is On+1,
-    onSize(Size, R), !.
+% onSize([], []):-!.
+% onSize([[_,On]|Size], [On1|R]):-
+%     On1 is On+1,
+%     onSize(Size, R), !.
 
 % min_num_blocks(S, N): state S has at least N blocks
 min_num_blocks(S, N):-
@@ -316,14 +320,14 @@ printall([E|R]):-
     printall(R),!.
 
 
-%%
-% printsp([]):-!.
-% printsp([v(0.81,S)|R]):-
-%     S = [cl(b),cl(DD),cl(DD),on(a,_51264),on(DD,a)],
-%     mydif(DD, c),
-%     get_attr(DD, dif, Value),
-%     writeln(v(0.81,S)),
-%     writeln(Value),
-%     printsp(R), !.
-% printsp([v(_,_)|R]):-
-%     printsp(R), !.
+%
+printsp([]):-!.
+printsp([partialQ(0.0729,_,S)|R]):-
+    % S = [cl(b),cl(DD),cl(DD),on(a,_51264),on(DD,a)],
+    % mydif(DD, c),
+    % get_attr(DD, dif, Value),
+    writeln(partialQ(0.0729,S)),
+    % writeln(Value),
+    printsp(R), !.
+printsp([partialQ(_,_,_)|R]):-
+    printsp(R), !.

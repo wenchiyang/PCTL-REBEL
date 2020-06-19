@@ -9,7 +9,7 @@
 ex :-
     % protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(3, [[]], [[on(a,b)]], >=, 0.8, Res), Res), !,
+    evaluate(until(4, [[]], [[on(a,b)]], >=, 0.9, Res), Res), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,_,_,R|_],
     print_message(informational, exetime(Start, Stop)).

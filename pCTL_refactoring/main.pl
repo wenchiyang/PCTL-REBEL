@@ -8,16 +8,7 @@
 :- use_module(setting).
 %:- set_prolog_flag(optimize,full).
 
-% :- dynamic memo_/1.
-% % memo/1:
-% % if Goal has been executed, use the result,
-% % otherwise execute Goal and insert the result into the database
-% memo(Goal) :-
-%         (   memo_(Goal)
-%         ->  true
-%         ;   once(Goal),
-%             assertz(memo_(Goal))
-%         ).
+
 memo(Step, Goal) :-
         (   recorded(Step,Goal)
         -> true
@@ -381,22 +372,23 @@ valueIteration_helper(CurrentStep, InitV, CurrentV, Phi1s, Phi2sQs):-
     oneIteration(PreviousV, CurrentV, Phi1s, Phi2sQs),
     !.
 
-oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
-    nonDetActions(det), !,
-    append(VFs, [v(0.0, [])], VFs1),
-        statistics(runtime, [Start1|_]),
-    getPartialQwp1Det(VFs1, Phi2sQs, Phi1s, SPQs1), !,
-        length(SPQs1, LSPQs1),
-        write("partialQs: "), writeln([LSPQs1]),
-        statistics(runtime, [Stop1|_]),
-        print_message(informational, partialQtime(Start1, Stop1)),
-    %%% step 2: combining, producing Q rules
-        statistics(runtime, [Start2|_]),
-    %list_to_set1(SPQs1, QRules), !,
-        statistics(runtime, [Stop2|_]),
-        print_message(informational, qtime(Start2,Stop2)),
-    qTransfer(SPQs1, NewVFs),
-    !.
+% deterministic acrtions
+% oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
+%     nonDetActions(det), !,
+%     append(VFs, [v(0.0, [])], VFs1),
+%         statistics(runtime, [Start1|_]),
+%     getPartialQwp1Det(VFs1, Phi2sQs, Phi1s, SPQs1), !,
+%         length(SPQs1, LSPQs1),
+%         write("partialQs: "), writeln([LSPQs1]),
+%         statistics(runtime, [Stop1|_]),
+%         print_message(informational, partialQtime(Start1, Stop1)),
+%     %%% step 2: combining, producing Q rules
+%         statistics(runtime, [Start2|_]),
+%     %list_to_set1(SPQs1, QRules), !,
+%         statistics(runtime, [Stop2|_]),
+%         print_message(informational, qtime(Start2,Stop2)),
+%     qTransfer(SPQs1, NewVFs),
+%     !.
 
 oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     nonDetActions(nondet), !,
@@ -410,10 +402,12 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %statistics(global_stack, [Used2,_]),
         %write("stack before partialQ2 : "),
         %print_message(informational, stackusage(Used2)),
+    % printall(SPQs1), nl,nl,
     getPartialQwp2(VFs1, Phi1s, SPQs2), !,
         %statistics(global_stack, [Used3,_]),
         %write("stack before combining partialQs : "),
         %print_message(informational, stackusage(Used3)),
+    printsp(SPQs2), nl,nl,
         length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
         write("partialQs: "), writeln([LSPQs1, LSPQs2]),
         statistics(runtime, [Stop1|_]),
@@ -441,92 +435,62 @@ getQ(SPQs1, SPQs2, Qrule):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
-    PartialQ1 = partialQ(Q1,A1,_),
+    PartialQ1 = partialQ(_,A1,_),
     PartialQ2 = partialQ(_,A2,_),
     % Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, Qrule).
-    % (
-    % A1 = move(a,XX,YY),
-    % Qrule = q(0.6561000000000001, [cl(a),cl(XX),on(a,YY),on(XX,b)])
-    % ->
-    %     writeln(A1),
-    %     writeln(PartialQ1),
-    %     writeln(PartialQ2), nl
-    % ;
-    %     true
-    % ).
 
-
-partialQstoQ(partialQ(Q1,_,S1),
-             partialQ(Q2,_,S2),
+partialQstoQ(partialQ(Q1,_,S1), partialQ(Q2,_,S2),
              q(Q, S2)):-
     legalstate(S2),
     thetasubsumes(S1, S2), !,
     Q is Q1 + Q2, !.
 
-partialQstoQ(partialQ(Q1,_,S1),
-             partialQ(Q2,_,S2),
+partialQstoQ(partialQ(Q1,_,S1), partialQ(Q2,_,S2),
              q(Q, S1)):-
     legalstate(S1),
-    thetasubsumes(S2,S1), !,
+    thetasubsumes(S2, S1), !,
     Q is Q1 + Q2, !.
 
-getPartialQwp1Det(VFs, Phi2sQs, Phi1s, SPQs1):-
-    garbage_collect,
-    findall_partialQsDet(PQ1, Phi2sQs, wp1(VFs,Phi1s,PQ1), SPQs1), !,
-    garbage_collect,
-    !.
+% getPartialQwp1Det(VFs, Phi2sQs, Phi1s, SPQs1):-
+%     garbage_collect,
+%     findall_partialQsDet(PQ1, Phi2sQs, wp1(VFs,Phi1s,PQ1), SPQs1), !,
+%     garbage_collect,
+%     !.
 
 getPartialQwp1(VFs, Phi1s, SPQs1):-
-    garbage_collect,
+    % garbage_collect,
     findall_partialQs(PQ1, wp1(VFs,Phi1s,PQ1), SPQs1), !,
-    garbage_collect,
+    % garbage_collect,
     !.
 
 getPartialQwp2(VFs, Phi1s, SPQs2):-
-    garbage_collect,
+    % garbage_collect,
     findall_partialQs(PQ2, wp2(VFs,Phi1s,PQ2), SPQs2), !,
-    garbage_collect,
+    % garbage_collect,
     !.
-
-
-
-% read the setting: det or nondet actions
-wp1(VFs, Phi1s, PQ):-
-    nonDetActions(nondet), !,
-    wp1_nondet(VFs, Phi1s, PQ).
-
-wp1(VFs, Phi1s, PQ):-
-    nonDetActions(det), !,
-    wp1_det(VFs, Phi1s, PQ).
-
-wp2(VFs, Phi1s, PQ):-
-    nonDetActions(nondet), !,
-    wp2_nondet(VFs, Phi1s, PQ).
 
 
 %%
 
-wp1_det(VFs, Phi1s, PQ) :-
-    member(v(VFValue, VFState), VFs),
-    VFValue > 0,
-    mydif(X,Y), mydif(Y,Z), mydif(X,Z),
-    wpi([cl(X), cl(Z), on(X,Y)], 1.0, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
-        Phi1s, VFValue, VFState, PQ).
+% wp1_det(VFs, Phi1s, PQ) :-
+%     member(v(VFValue, VFState), VFs),
+%     VFValue > 0,
+%     mydif(X,Y), mydif(Y,Z), mydif(X,Z),
+%     wpi([cl(X), cl(Z), on(X,Y)], 1.0, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
+%         Phi1s, VFValue, VFState, PQ).
 
-wp1_nondet(VFs, Phi1s, PQ) :-
+wp1(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
     % VFValue > 0,
-    mydif(X,Y), mydif(Y,Z), mydif(X,Z),
-    wpi([cl(X), cl(Z), on(X,Y)], 0.9, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
-        Phi1s, VFValue, VFState, PQ).
+    transition(Action, 1, Prob, Head_i, Body),
+    wpi(Head_i, Prob, Action, Body, Phi1s, VFValue, VFState, PQ).
 
-wp2_nondet(VFs, Phi1s, PQ) :-
+wp2(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
-    mydif(X,Y), mydif(Y,Z), mydif(X,Z),
-    wpi([cl(X), cl(Y), on(X,Z)], 0.1, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
-        Phi1s, VFValue, VFState, PQ).
+    transition(Action, 2, Prob, Head_i, Body),
+    wpi(Head_i, Prob, Action, Body, Phi1s, VFValue, VFState, PQ).
 
 
 % Takes an action rule "ActionHead <----Prob:[Act]---- ActionBody"
@@ -535,19 +499,8 @@ wp2_nondet(VFs, Phi1s, PQ) :-
 wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     % get a subH
     subsetgen(Head, SubH),
-    % get SubVFState
-    predInList(SubH, cl, ClSubH),
-    predInList(SubH, on, OnSubH),
-    length(ClSubH, LClSubH), length(OnSubH, LOnSubH),
-    structsubset(LClSubH, LOnSubH, VFState, ClSpp, OnSpp), %%%% BUG
-    % structsubset(SubH, VFState, ClSpp, OnSpp), %%%% BUG
     % create all possible \theta
-    permutation(ClSubH, ClSubHp),
-    ClSubHp = ClSpp,
-    permutation(OnSubH, OnSubHp),
-    OnSubHp = OnSpp,
-    append(ClSubHp, OnSubHp, SubHp),
-
+    structsubset(SubH, VFState, SubHp),
     % create VFSTail using \theta
     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
     ord_subtract(VFStateTT, SubHpTT, VFSTail),
@@ -560,10 +513,8 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
     member(Phi1, Phi1s), extract(Phi1), extract(VFSTail), extract(Body),
     getallstuff(GlbTT),
     subsumesort(GlbTT, Glb),
-
     sort(Head, HeadTT), sort(Body, BodyTT),
     ord_union(HeadTT, BodyTT, Lpp),
-
     cartesian_dif(VFSTail, Lpp),
     %========================
     % blocks_limit(B),
@@ -580,14 +531,14 @@ qTransfer([q(Q,S)|Qs],[v(Q,S)|Vs]):-
 
 
 %%
-% findall_Qrules(Q, getQ(SPQs1, SPQs2, Q), QRules), !,
 findall_Qrules(X, InitQs, Goal, Results) :-
     State = state(InitQs),
-    (Goal,
+    (
+    Goal,
     arg(1, State, S0),
-    % addQ(S0, X, S),
+    % addQ(S0, X, SortedS),
     addQ(S0, X, S),
-    sortByQValue(S, SortedS),
+    sortByQValue(S, SortedS), % OPTIMIZE
     nb_setarg(1, State, SortedS),
     fail
     ;
@@ -600,16 +551,13 @@ findall_Qrules(X, InitQs, Goal, Results) :-
 addQ([], New_QRule, [New_QRule]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addQ([q(Q1,S1)|T0],
-      q(Q,S),
-     [q(Q1,S1)|T0]) :-
-        Q1 >= Q,
-        thetasubsumes(S1,S), !.
+addQ([q(Q1,S1)|T0], q(Q,S), [q(Q1,S1)|T0]) :-
+    Q1 >= Q,
+    thetasubsumes(S1,S), !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
-addQ([q(Q1,S1)|T0],
-     q(Q,S),
-     T) :-
+% and add New_QRule
+addQ([q(Q1,S1)|T0], q(Q,S), T) :-
     Q1 =< Q,
     thetasubsumes(S, S1), !,
     addQ(T0, q(Q,S), T), !.
@@ -619,49 +567,6 @@ addQ([q(Q1,S1)|T0],
 addQ([QRule1|T0], New_QRule, [QRule1|T]) :-
     addQ(T0, New_QRule, T), !.
 
-
-findall_partialQsDet(X, InitQs, Goal, Results) :-
-    State = state(InitQs),
-    (  Goal,
-       arg(1, State, S0),
-       addpartialQ(S0, X, SortedS),
-       % sortByQValue(S, SortedS),
-       nb_setarg(1, State, SortedS),
-       fail
-    ;
-       arg(1, State, Results)
-    ).
-
-
-% assume List_Of_QRules is sorted
-% Base case 1:
-addpartialQ([], partialQ(Q,_,S), [q(Q,S)]):-!.
-% Base case 2:
-% if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addpartialQ([q(Q1,S1)|T0],
-      partialQ(Q,_,S),
-     [q(Q1,S1)|T0]) :-
-        Q1 >= Q,
-        % subsumess(Size1,Str1,Size,Sta), !.
-        % thetasubsumes(S1,S,Size1,Size),!.
-        thetasubsumes(S1,S),!.
-
-% if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
-addpartialQ([q(Q1,S1)|T0],
-     partialQ(Q,_,S),
-     T) :-
-    Q1 =< Q,
-    % subsumess(Size,Str,Size1,Sta1), !,
-    % thetasubsumes(S, S1,Size,Size1), !,
-    thetasubsumes(S, S1), !,
-    addpartialQ(T0, partialQ(Q,_,S), T), !.
-
-% if New_QRule and QRule1 do not subsumess each other,
-% check the next QRule1
-addpartialQ([QRule1|T0], New_QRule, [QRule1|T]) :-
-    addpartialQ(T0, New_QRule, T), !.
-
-
 %%
 %%
 %% findall_partialQs(PQ1, wp1(VFs,Phi1s,PQ1), PQs1U)
@@ -669,14 +574,40 @@ findall_partialQs(X, Goal, Results) :-
   State = state([]),
   (  Goal,
      arg(1, State, S0),
-     nb_setarg(1, State, [X|S0]),
+     % addpartialQ(S0, X, S),
+     % sortByQValue(S, SortedS),
+
+     % list_to_set1([X|S0],SortedS),
+     % sortByQValue([X|S0], SortedS),
+
+     sortByQValue([X|S0], SortedS),
+     nb_setarg(1, State, SortedS),
      fail
   ;
-     arg(1, State, Reverse),
-     reverse(Reverse, Results)
+     arg(1, State, Results)
   ).
 
+% assume List_Of_QRules is sorted
+% Base case 1:
+addpartialQ([], New_partialQ, [New_partialQ]):-!.
+% Base case 2:
+% if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
+addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), [q(Q1,A1,S1)|T0]) :-
+        Q1 >= Q,
+        thetasubsumes([A1], [A]),
+        thetasubsumes(S1,S), !.
 
+% if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
+addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), T) :-
+    Q1 =< Q,
+    thetasubsumes([A], [A1]),
+    thetasubsumes(S, S1), !,
+    addpartialQ(T0, partialQ(Q,A,S), T), !.
+
+% if New_QRule and QRule1 do not subsumess each other,
+% check the next QRule1
+addpartialQ([PartialQ1|T0], New_partialQ, [PartialQ1|T]) :-
+    addpartialQ(T0, New_partialQ, T), !.
 
 legalaction(move(X,Y,Z)):-
   X\=Y, Y\=Z, Z\=X, !.
