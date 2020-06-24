@@ -407,7 +407,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %statistics(global_stack, [Used3,_]),
         %write("stack before combining partialQs : "),
         %print_message(informational, stackusage(Used3)),
-    printsp(SPQs2), nl,nl,
+    % printsp(SPQs2), nl,nl,
         length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
         write("partialQs: "), writeln([LSPQs1, LSPQs2]),
         statistics(runtime, [Stop1|_]),
@@ -426,6 +426,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %garbage_collect,
     %%% step 3: filtering, producing value functions
         %statistics(runtime, [Start3|_]),
+    % printall(QRules), nl, nl,
     qTransfer(QRules, NewVFs),
     !.
 
@@ -441,14 +442,15 @@ getQ(SPQs1, SPQs2, Qrule):-
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, Qrule).
 
-partialQstoQ(partialQ(Q1,_,S1), partialQ(Q2,_,S2),
-             q(Q, S2)):-
+
+partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
+             q(Q, A, S2)):-
     legalstate(S2),
     thetasubsumes(S1, S2), !,
     Q is Q1 + Q2, !.
 
-partialQstoQ(partialQ(Q1,_,S1), partialQ(Q2,_,S2),
-             q(Q, S1)):-
+partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
+             q(Q, A, S1)):-
     legalstate(S1),
     thetasubsumes(S2, S1), !,
     Q is Q1 + Q2, !.
@@ -526,7 +528,7 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
 
 %%
 qTransfer([],[]):- !.
-qTransfer([q(Q,S)|Qs],[v(Q,S)|Vs]):-
+qTransfer([q(Q,_,S)|Qs],[v(Q,S)|Vs]):-
     qTransfer(Qs, Vs), !.
 
 
@@ -536,7 +538,6 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     (
     Goal,
     arg(1, State, S0),
-    % addQ(S0, X, SortedS),
     addQ(S0, X, S),
     sortByQValue(S, SortedS), % OPTIMIZE
     nb_setarg(1, State, SortedS),
@@ -551,16 +552,16 @@ findall_Qrules(X, InitQs, Goal, Results) :-
 addQ([], New_QRule, [New_QRule]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addQ([q(Q1,S1)|T0], q(Q,S), [q(Q1,S1)|T0]) :-
+addQ([q(Q1,A1,S1)|T0], q(Q,_,S), [q(Q1,A1,S1)|T0]) :-
     Q1 >= Q,
     thetasubsumes(S1,S), !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
 % and add New_QRule
-addQ([q(Q1,S1)|T0], q(Q,S), T) :-
+addQ([q(Q1,_,S1)|T0], q(Q,A,S), T) :-
     Q1 =< Q,
     thetasubsumes(S, S1), !,
-    addQ(T0, q(Q,S), T), !.
+    addQ(T0, q(Q,A,S), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1
@@ -574,13 +575,13 @@ findall_partialQs(X, Goal, Results) :-
   State = state([]),
   (  Goal,
      arg(1, State, S0),
+
+
      % addpartialQ(S0, X, S),
      % sortByQValue(S, SortedS),
 
-     % list_to_set1([X|S0],SortedS),
-     % sortByQValue([X|S0], SortedS),
-
      sortByQValue([X|S0], SortedS),
+
      nb_setarg(1, State, SortedS),
      fail
   ;
@@ -589,19 +590,25 @@ findall_partialQs(X, Goal, Results) :-
 
 % assume List_Of_QRules is sorted
 % Base case 1:
-addpartialQ([], New_partialQ, [New_partialQ]):-!.
+addpartialQ([], New_partialQ, [New_partialQ]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), [q(Q1,A1,S1)|T0]) :-
-        Q1 >= Q,
-        thetasubsumes([A1], [A]),
-        thetasubsumes(S1,S), !.
+addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), [partialQ(Q1,A1,S1)|T0]) :-
+    Q1 == Q,
+    thetasubsumes([A1|S1],[A|S]),
+    % (
+    %     Q = 0.0729
+    % ->
+    %     % writeln("discarded: "),
+    %     writeln(partialQ(Q,A,S))
+    % ; true
+    % ),
+    !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
 addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), T) :-
     Q1 =< Q,
-    thetasubsumes([A], [A1]),
-    thetasubsumes(S, S1), !,
+    thetasubsumes([A|S], [A1|S1]),
     addpartialQ(T0, partialQ(Q,A,S), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,

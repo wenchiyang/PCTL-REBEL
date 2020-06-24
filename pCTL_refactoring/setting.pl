@@ -6,7 +6,6 @@
                     mydif/2]).
 
 nonDetActions(nondet). % nondet/det
-
 blocks_limit(non). % non/an integer > 3
 discountfactor(1). %
 convergence_threshold(0.01). % residual for the VI algorithm to stop

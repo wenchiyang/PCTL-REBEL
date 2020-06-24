@@ -103,11 +103,11 @@ count_ground([E|R], Num):-
 sortByQValue(List, Sorted):-
     predsort(qcompare, List, Sorted), !.
 
-qcompare(<, q(Q1,_), q(Q2,_)):- Q1 > Q2, !.
-qcompare(>, q(Q1,_), q(Q2,_)):- Q1 < Q2, !.
-qcompare(<, q(Q,S1), q(Q,S2)):-
+qcompare(<, q(Q1,_,_), q(Q2,_,_)):- Q1 > Q2, !.
+qcompare(>, q(Q1,_,_), q(Q2,_,_)):- Q1 < Q2, !.
+qcompare(<, q(Q,_,S1), q(Q,_,S2)):-
     length(S1, LS1), length(S2, LS2), LS1 =< LS2, !.
-qcompare(>, q(Q,S1), q(Q,S2)):-
+qcompare(>, q(Q,_,S1), q(Q,_,S2)):-
     length(S1, LS1), length(S2, LS2), LS1 > LS2, !.
 qcompare(=, QRule1, QRule2):-
     QRule1 = QRule2, !.
