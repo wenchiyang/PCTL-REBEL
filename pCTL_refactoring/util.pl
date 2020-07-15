@@ -1,4 +1,4 @@
-:- module(util, [subsetgen/2, predInList/3, extract/1,
+:- module(util, [subsetgen/2, extract/1,
 mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/3, filter/4,
 getVFStates/2, printall/1, andstate/3, oi/2, legalstate/1,
@@ -195,9 +195,7 @@ getstrnum([sta(L,S)|Str], [L|StrNum], [S|StrS]):-
 % predInList([cl(_)|S], on, SubS):- % skip cl/1 when targetting on/2
 %     predInList(S, on, SubS), !.
 
-% This is for a newer version of swi prolog
-predInList(OldState, Type, NewState):-
-    include([X]>>functor(X, Type, _), OldState, NewState), !.
+
 
 % This is for an older version of swi prolog
 % filter(VN, Op, Threshold, NewVN): NewVN contains the v(Q,S)

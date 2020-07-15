@@ -575,13 +575,9 @@ findall_partialQs(X, Goal, Results) :-
   State = state([]),
   (  Goal,
      arg(1, State, S0),
-
-
      % addpartialQ(S0, X, S),
      % sortByQValue(S, SortedS),
-
      sortByQValue([X|S0], SortedS),
-
      nb_setarg(1, State, SortedS),
      fail
   ;
