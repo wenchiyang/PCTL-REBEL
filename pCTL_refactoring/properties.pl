@@ -6,15 +6,23 @@
 :- use_module(util).
 :- use_module(setting).
 
-ex :-
+experiment1:-
     % protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(5, [[]], [[on(a,b)]], >=, 0.6, Res), Res), !,
+    evaluate(until(10, [[]], [[on(a,b)]], >=, 0.5, Res), Res), !,
     statistics(runtime, [Stop|_]),
-    % Res = [_,_,_,_,_,R|_],
+    % Res = [_,R|_],
     print_message(informational, exetime(Start, Stop)).
     % noprotocol.
 
+experiment2:-
+    % protocol('experiments/exp1_singlethread.txt'),
+    statistics(runtime, [Start|_]),
+    evaluate(until(6, [[on(c,d)]], [[on(a,b)]], >=, 0.6, Res), Res), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,_,R|_],
+    print_message(informational, exetime(Start, Stop)).
+    % noprotocol.
 %%
 %%
 

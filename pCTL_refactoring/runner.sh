@@ -3,4 +3,5 @@
 #rm -r experiments/
 mkdir experiments
 
-swipl -g ex -g halt properties.pl
+# swipl -g experiment2 -g halt properties.pl
+swipl -g experiment1 -g halt properties.pl

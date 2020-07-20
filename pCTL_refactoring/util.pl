@@ -1,9 +1,9 @@
 :- module(util, [subsetgen/2, extract/1,
 mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/3, filter/4,
-getVFStates/2, printall/1, andstate/3, oi/2, legalstate/1,
+getVFStates/2, printall/1, andstate/3, oi_qrule/1, legalstate/1,
 thetasubsumes/2, getallstuff/1, cartesian_dif/2,
-printsp/1, printspp/3, printsppp/4]).
+printsp/1, printspp/3, printsppp/4, generateOIstate/2]).
 
 :- use_module(sorting).
 :- use_module(setting).
@@ -277,39 +277,59 @@ min_num_blocks(S, N):-
     list_to_set1(ListBlocks1, SetBlocks), !,
     length(SetBlocks, N), !.
 
-% termsInState(S, B): state S has a set of blocks B
+
+%%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
+% get number of terms
 termsInState([], []) :- !.
 termsInState([cl(X)|S], [X|B]):-
     termsInState(S, B), !.
 termsInState([on(X,Y)|S], [X,Y|B]):-
     termsInState(S, B), !.
 
-%
-% this uses backtracking to create all specifications
-list2set([] , []).
-list2set([E|Es] , Set) :-
-    member(E, Es) ,
-    list2set(Es , Set).
-list2set([E|Es] , [E|Set] ) :-
-    maplist(mydif(E), Es),
-    list2set(Es , Set).
+
+% generateOIstate(NonOIState, OIState)
+% this uses backtracking to create all oi specifications
+generateOIstate([] , []) :- !.
+generateOIstate([E|Es] , [E|Set] ) :-
+    maplist(mydif(E), Es), % TODO test the order
+    generateOIstate(Es , Set).
+
+generateOIstate([E|Es] , Set) :-
+    member(E, Es),
+    generateOIstate(Es , Set).
 
 
+generateBoundedStates(_, _, LargestObjectNum, ObjectBound):-
+    LargestObjectNum =< ObjectBound.
 
-%%
-oi(State, non):-
-    termsInState(State, Terms),
-    list_to_set(Terms, TermSet),
-    list2set(TermSet, TermUnifiedSet),
-    legalstate(State).
-
-oi(State, B):-
-    B \= non,
-    termsInState(State, Terms),
-    list_to_set(Terms, TermSet),
-    list2set(TermSet, TermUnifiedSet),
+generateBoundedStates(State, TermSet, LargestObjectNum, ObjectBound):-
+    LargestObjectNum > ObjectBound,
+    generateOIstate(TermSet, TermSetSet),
     legalstate(State),
-    boundedstate(State, B).
+
+    length(TermSetSet, LTermSetSet),
+    LTermSetSet =< ObjectBound.
+
+oi_qrule(q(_,_,_)):-
+    blocks_limit(non), !.
+
+oi_qrule(q(_,_,S)):-
+    termsInState(S, Terms),
+    list_to_set(Terms, TermSet),
+    length(TermSet, LargestObjectNum),
+    blocks_limit(ObjectBound),
+    generateBoundedStates(S, TermSet, LargestObjectNum, ObjectBound).
+
+oi_qrule(partialQ(_,_,_)):-
+    blocks_limit(non), !.
+
+oi_qrule(partialQ(_,_,S)):-
+    termsInState(S, Terms),
+    list_to_set(Terms, TermSet),
+    length(TermSet, LargestObjectNum),
+    blocks_limit(ObjectBound),
+    generateBoundedStates(S, TermSet, LargestObjectNum, ObjectBound).
+%%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
 
 %%
 printall([]):- !.

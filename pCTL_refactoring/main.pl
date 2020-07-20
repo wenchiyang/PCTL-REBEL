@@ -430,17 +430,20 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     qTransfer(QRules, NewVFs),
     !.
 
+
+
 % use backtracking to generate all Q rules from all possible
 % combinations from partialQ1s and PartialQ2s
 getQ(SPQs1, SPQs2, Qrule):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
-    PartialQ1 = partialQ(_,A1,_),
+    PartialQ1 = partialQ(Q1,A1,_),
     PartialQ2 = partialQ(_,A2,_),
-    % Q1 > 0,
+    Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, Qrule).
+    % oi_qrule(Qrule).
 
 
 partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
@@ -507,8 +510,9 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
     ord_subtract(VFStateTT, SubHpTT, VFSTail),
     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-             partialQ(Q,A,S))
-    .
+             partialQ(Q,A,S)).
+    % oi_qrule(partialQ(Q,A,S)).
+
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
         partialQ(NewVFValue, Act, Glb)) :-
@@ -575,9 +579,8 @@ findall_partialQs(X, Goal, Results) :-
   State = state([]),
   (  Goal,
      arg(1, State, S0),
-     % addpartialQ(S0, X, S),
-     % sortByQValue(S, SortedS),
-     sortByQValue([X|S0], SortedS),
+     addpartialQ(S0, X, S),
+     sortByQValue(S, SortedS),
      nb_setarg(1, State, SortedS),
      fail
   ;
@@ -590,15 +593,8 @@ addpartialQ([], New_partialQ, [New_partialQ]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
 addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), [partialQ(Q1,A1,S1)|T0]) :-
-    Q1 == Q,
+    Q1 >= Q,
     thetasubsumes([A1|S1],[A|S]),
-    % (
-    %     Q = 0.0729
-    % ->
-    %     % writeln("discarded: "),
-    %     writeln(partialQ(Q,A,S))
-    % ; true
-    % ),
     !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
