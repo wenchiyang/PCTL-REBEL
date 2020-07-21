@@ -273,16 +273,16 @@ evaluate(Phi) :-
     Phi =.. [until, PhiStates, Steps, Phi1, Phi2, Op, Threshold],
     evaluate(Phi1), !, arg(1, Phi1, Phi1States),
     evaluate(Phi2), !, arg(1, Phi2, Phi2States),
-    apply(until, [PhiStates, Steps, Phi1States, Phi2States, Op, Threshold]), !,
-    print_message(informational, phistates(Phi)).
+    apply(until, [PhiStates, Steps, Phi1States, Phi2States, Op, Threshold]), !.
+    % print_message(informational, phistates(Phi)).
 
 % evaluate next formula:
 % PhiStates == P_{Op Threshold} [X Phi2]
 evaluate(Phi) :-
     Phi =.. [next, PhiStates, Phi2, Op, Threshold],
     evaluate(Phi2), !, arg(1, Phi2, Phi2States),
-    apply(next, [PhiStates, Phi2States, Op, Threshold]), !,
-    print_message(informational, phistates(Phi)).
+    apply(next, [PhiStates, Phi2States, Op, Threshold]), !.
+    % print_message(informational, phistates(Phi)).
 
 % evaluate and formula:
 % PhiStates == Phi1 and Phi2
@@ -290,10 +290,10 @@ evaluate(Phi) :-
     Phi =.. [and, PhiStates, Phi1, Phi2],
     evaluate(Phi1), !, arg(1, Phi1, Phi1States),
     evaluate(Phi2), !, arg(1, Phi2, Phi2States),
-    apply(and, [PhiStates, Phi1States, Phi2States]), !,
+    apply(and, [PhiStates, Phi1States, Phi2States]), !.
     % list_to_set1(PhiStates, SortedStates),
     % length(PhiStates, L1), length(SortedStates, L2),
-    print_message(informational, phistates(Phi)).
+    % print_message(informational, phistates(Phi)).
 
 
 % get cartesian product of two state lists,
@@ -354,14 +354,9 @@ vi(TotalSteps, CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs, FinalVs):-
 
 
 valueIteration(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs):-
-    % RemoveMemoryIndex is CurrentStep - 2,
-    % retractall(memo_(valueIteration_helper(RemoveMemoryIndex,_,_,_,_))),
     print_message(informational, iteration(CurrentStep)), nl,
     memo(CurrentStep, valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs)), !,
-    printall(CurrentVs),
-    length(CurrentVs, LLL),
-    write("#abstract states: "), writeln(LLL),
-    nl, nl,
+    print_message(informational, vf(CurrentVs)),
     !.
 
 valueIteration_helper(0, InitV, InitV, _, _):-!.
@@ -407,9 +402,8 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %write("stack before combining partialQs : "),
         %print_message(informational, stackusage(Used3)),
     % printsp(SPQs2), nl,nl,
-        length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
-        write("partialQs: "), writeln([LSPQs1, LSPQs2]),
         statistics(runtime, [Stop1|_]),
+        print_message(informational, partialQs(SPQs1, SPQs2)),
         print_message(informational, partialQtime(Start1, Stop1)),
         %write("    step 1 : "), write(Step1), writeln(" s"),
     %%% step 2: combining, producing Q rules

@@ -5,7 +5,7 @@ import cv2
 import os
 from os import path
 import shutil
-
+import getopt, sys
 
 class Block:
     def __init__(self, name):
@@ -153,15 +153,38 @@ class BlocksWorld:
                     ctx.stroke()
                     # draw block label
                     ctx.move_to(x + BLOCK_WIDTH/6, y + BLOCK_WIDTH/2)
-                    ctx.show_text(block.block)
+                    if not block.block.startswith("_"):
+                        ctx.set_source_rgb(0, 0, 1)
+                        ctx.set_font_size(20)
+                        ctx.show_text(block.block)
+                        ctx.set_source_rgb(0, 0, 0)
+                        ctx.set_font_size(10)
+                    else:
+                        ctx.show_text(block.block)
                 elif isinstance(block, NonCl):
                     # draw block label
                     ctx.move_to(x + BLOCK_WIDTH/6, y + BLOCK_WIDTH/2)
-                    ctx.show_text(block.block)
+                    if not block.block.startswith("_"):
+                        ctx.set_source_rgb(0, 0, 1)
+                        ctx.set_font_size(20)
+                        ctx.show_text(block.block)
+                        ctx.set_source_rgb(0, 0, 0)
+                        ctx.set_font_size(10)
+                    else:
+                        ctx.show_text(block.block)
+
                 elif isinstance(block, On):
                     # draw block label
                     ctx.move_to(x + BLOCK_WIDTH/6, y + BLOCK_WIDTH/2)
-                    ctx.show_text(block.downblock)
+                    if not block.downblock.startswith("_"):
+                        ctx.set_source_rgb(0, 0, 1)
+                        ctx.set_font_size(20)
+                        ctx.show_text(block.downblock)
+                        ctx.set_source_rgb(0, 0, 0)
+                        ctx.set_font_size(10)
+                    else:
+                        ctx.show_text(block.downblock)
+
                 ctx.stroke()
         ##### draw value #####
         text_q = "q = " + self.q
@@ -218,11 +241,36 @@ def vconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
     return cv2.vconcat(im_list_resize)
 
 
-def main(valuefunction):
+def main(valuefunction, imgfolder, imgfile):
     # state1 = "v(0.972,[cl(a),cl(_135230),cl(b),on(a,a),on(a,_135294),on(_135230,_135326)])"
     # blocksworld1 = parse(state1)
     # surface = blocksworld1.save_to_file()
     # surface.write_to_png("rectangle.png")
+    if path.exists(imgfolder):
+        shutil.rmtree(imgfolder)
+    os.mkdir(imgfolder)
+
+    # lines = valuefunction.split("\n")
+    counter = 0
+    imgs = []
+    for line in valuefunction:
+        if line:
+            filename = imgfolder+"img"+str(counter)+".png"
+            counter += 1
+            blocksworld = parse(line)
+            surface = blocksworld.save_to_file()
+            surface.write_to_png(filename)
+            imgs.append(cv2.imread(filename))
+
+    im_h_resize = hconcat_resize_max(imgs)
+    cv2.imwrite(imgfile, im_h_resize)
+    # cv2.imwrite('opencv_hconcat2.jpg', im_h_resize)
+    # im_v_resize = vconcat_resize_max(imgs)
+    # cv2.imwrite('opencv_vconcat.jpg', im_v_resize)
+    # cv2.imwrite('opencv_vconcat2.jpg', im_v_resize)
+
+
+def drawseq():
     folder = "tempfigures/"
     if path.exists(folder):
         shutil.rmtree(folder)
@@ -240,37 +288,43 @@ def main(valuefunction):
             surface.write_to_png(filename)
             imgs.append(cv2.imread(filename))
 
-    im_h_resize = hconcat_resize_max(imgs)
-    cv2.imwrite('opencv_hconcat.jpg', im_h_resize)
-    # cv2.imwrite('opencv_hconcat2.jpg', im_h_resize)
-    # im_v_resize = vconcat_resize_max(imgs)
-    # cv2.imwrite('opencv_vconcat.jpg', im_v_resize)
-    # cv2.imwrite('opencv_vconcat2.jpg', im_v_resize)
 
-valuefunction = \
-"""
-partialQ(0.1,move(_368924,_369108,_368988),[cl(_368924),cl(_369108),on(a,b),on(_368924,_368988)])
-partialQ(0.0999,move(_374074,_374302,_374226),[cl(a),cl(b),cl(_374074),cl(_374302),on(a,_374530),on(_374074,_374226)])
-partialQ(0.09720000000000001,move(_385860,_386000,_385924),[cl(b),cl(_385860),cl(_386000),on(b,a),on(a,_386714),on(_385860,_385924)])
-partialQ(0.09720000000000001,move(_391528,_391668,_391592),[cl(b),cl(_391668),cl(_391528),on(a,_392838),on(_391668,a),on(_391528,_391592)])
-partialQ(0.09720000000000001,move(_394608,_394748,_394672),[cl(a),cl(_394748),cl(_394608),on(a,_395918),on(_394748,b),on(_394608,_394672)])
-partialQ(0.09720000000000001,move(_396160,_396300,_396224),[cl(b),cl(_396408),cl(_396160),cl(_396300),on(a,_397600),on(_396408,a),on(_396160,_396224)])
-partialQ(0.09720000000000001,move(_397842,_397982,_397906),[cl(a),cl(_398090),cl(_397842),cl(_397982),on(a,_399282),on(_398090,b),on(_397842,_397906)])
-partialQ(0.0729,move(_403814,_404206,_403878),[cl(_404206),cl(_403814),on(b,a),on(a,_403910),on(_404206,b),on(_403814,_403878)])
-partialQ(0.0729,move(_410624,_410752,_410688),[cl(a),cl(_410624),cl(_410752),on(a,_410688),on(_410688,b),on(_410624,_410688)])
-partialQ(0.0729,move(_429724,_429852,_429788),[cl(b),cl(_429724),cl(_429852),on(a,_432046),on(_429788,a),on(_429724,_429788)])
-partialQ(0.0729,move(_437368,_437760,_437432),[cl(_437824),cl(_437368),cl(_437760),on(b,a),on(a,_437464),on(_437824,b),on(_437368,_437432)])
-partialQ(0.0729,move(_441944,_442084,_442008),[cl(b),cl(_441944),cl(_442084),on(a,_444106),on(b,_442160),on(_442160,a),on(_441944,_442008)])
-partialQ(0.0729,move(_444360,_444752,_444424),[cl(_444752),cl(_444872),cl(_444360),on(a,_444456),on(_444752,a),on(_444872,b),on(_444360,_444424)])
-partialQ(0.0729,move(_446856,_447248,_446920),[cl(_448292),cl(_447248),cl(_446856),on(a,_446952),on(_448292,a),on(_447248,b),on(_446856,_446920)])
-partialQ(0.0729,move(_457148,_457540,_457212),[cl(b),cl(_457540),cl(_457148),on(a,_457244),on(_457616,a),on(_457540,_457616),on(_457148,_457212)])
-partialQ(0.0729,move(_462396,_462536,_462460),[cl(a),cl(_462536),cl(_462396),on(a,_464738),on(_462612,b),on(_462536,_462612),on(_462396,_462460)])
-partialQ(0.0729,move(_464992,_465492,_465056),[cl(a),cl(_464992),cl(_465120),cl(_465492),on(a,_467444),on(_465056,b),on(_464992,_465056)])
-partialQ(0.0729,move(_467686,_468078,_467750),[cl(_469142),cl(_468142),cl(_467686),cl(_468078),on(a,_467782),on(_469142,a),on(_468142,b),on(_467686,_467750)])
-partialQ(0.0729,move(_470324,_470716,_470388),[cl(b),cl(_470824),cl(_470324),cl(_470716),on(a,_470420),on(_470888,a),on(_470824,_470888),on(_470324,_470388)])
-partialQ(0.0729,move(_473130,_473270,_473194),[cl(a),cl(_473378),cl(_473130),cl(_473270),on(a,_475602),on(_473442,b),on(_473378,_473442),on(_473130,_473194)])
-partialQ(0.0,move(_475856,_475984,_475920),[cl(_475856),cl(_475984),on(_475856,_475920)])
-"""
+def getlastvaluefunction(content):
+    content = content.replace("\n", "|")
+    pattern_vf = re.compile(r'## value function ##([^#]*)########')
+    # capture the last value function
+    lastvf = re.findall(pattern_vf, content)[-1].replace("|","\n")
+    # remove irrelevant lines
+    lastvf = lastvf.split("\n")[1:-2]
+    return lastvf
+    # return vf[-1]
+
+# valuefunction = \
+# """
+# v(1.0,[on(a,b)])
+# v(0.99,[cl(a),cl(b),on(c,d),on(a,_244206)])
+# v(0.81,[cl(b),cl(_244644),on(b,a),on(c,d),on(a,_245072)])
+# v(0.81,[cl(a),cl(_245290),cl(_245398),on(c,d),on(a,_246116),on(_245290,b)])
+# v(0.81,[cl(b),cl(_246346),cl(_246454),on(c,d),on(a,_247172),on(_246346,a)])
+# v(0.0,[cl(_247402),cl(_247598),on(c,d),on(_247402,_247466)])
+# """
 
 
-main(valuefunction)
+# if __name__ == '__main__':
+
+    # # Get full command-line arguments
+    # full_cmd_arguments = sys.argv
+    #
+    # # Keep all but the first
+    # argument_list = full_cmd_arguments[1:]
+    #
+    # short_options = "i:o"
+    # long_options = ["input", "output"]
+    # try:
+    #     arguments, values = getopt.getopt(argument_list, short_options, long_options)
+    # except getopt.error as err:
+    #     # Output error, and return with an error code
+    #     print (str(err))
+    #     sys.exit(2)
+
+# drawseq()

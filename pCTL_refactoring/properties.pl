@@ -2,28 +2,26 @@
 :- use_module(library(chr)).
 :- use_module(chr(chr_runtime)).
 :- use_module(precond).
-% :- use_module(sorting).
-:- use_module(util).
 :- use_module(setting).
 
 experiment1:-
     statistics(runtime, [Start|_]),
-    evaluate(until(_, 3, states([[]]), states([[on(a,b)]]), >=, 0.5)), !,
+    Phi = until(_, 3, states([[]]), states([[on(a,b)]]), >=, 0.6),
+    evaluate(Phi), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,R|_],
-    protocola('experiments/exp1.txt'),
-    print_message(informational, exetime(Start, Stop)),
-    noprotocol.
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
 
 
 experiment2:-
     statistics(runtime, [Start|_]),
-    evaluate(until(_, 6, states([[on(c,d)]]), states([[on(a,b)]]), >=, 0.6)), !,
+    evaluate(until(_, 3, states([[on(c,d)]]), states([[on(a,b)]]), >=, 0.6)), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,_,R|_],
-    protocola('experiments/exp2.txt'),
-    print_message(informational, exetime(Start, Stop)),
-    noprotocol.
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
 
 
 experiment5_outer1 :-
@@ -46,6 +44,7 @@ experiment5_outer1 :-
         >=, 0.5)
     ), !,
     statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
 
@@ -97,3 +96,22 @@ message_hook(phistates(Phi), informational, _):-
   nl, nl,
   writeln("query: "), write(Functor), writeln(Rest), nl,
   writeln("answer: "), printall(PhiStates), nl, nl.
+
+message_hook(vf(CurrentVs), informational, _):-
+    nl,
+    writeln("## value function ##"),
+    printall(CurrentVs),
+    length(CurrentVs, LCurrentVs),
+    write("Number of abstract states: "), writeln(LCurrentVs),
+    writeln("########").
+
+
+message_hook(partialQs(SPQs1, SPQs2), informational, _):-
+    length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
+    write("partialQs: "), writeln([LSPQs1, LSPQs2]).
+
+%%
+printall([]):- !.
+printall([E|R]):-
+    writeln(E),
+    printall(R),!.

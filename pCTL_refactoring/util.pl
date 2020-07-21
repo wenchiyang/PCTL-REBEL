@@ -1,9 +1,9 @@
 :- module(util, [subsetgen/2, extract/1,
 mergestacks/2, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/3, filter/4,
-getVFStates/2, printall/1, andstate/3, oi_qrule/1, legalstate/1,
+getVFStates/2, andstate/3, oi_qrule/1, legalstate/1,
 thetasubsumes/2, getallstuff/1, cartesian_dif/2,
-printsp/1, printspp/3, printsppp/4, generateOIstate/2]).
+ generateOIstate/2]).
 
 :- use_module(sorting).
 :- use_module(setting).
@@ -331,44 +331,40 @@ oi_qrule(partialQ(_,_,S)):-
     generateBoundedStates(S, TermSet, LargestObjectNum, ObjectBound).
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
 
-%%
-printall([]):- !.
-printall([E|R]):-
-    writeln(E),
-    printall(R),!.
 
 
 %
-printsp([]):-!.
-printsp([PQ|R]):-
-    PQ = partialQ(Q,A,S),
-    A = move(X,Y,Z),
-    X \== a, X \== b, Y \== a, Y \== b, Z \== a, Z \== b,
-    % get_attr(DD, dif, Value),
-    writeln(PQ),
-    % writeln(Value),
-    printsp(R), !.
-printsp([partialQ(_,_,_)|R]):-
-    printsp(R), !.
-
-
-printspp(PartialQ1, PartialQ2, Qrule):-
-    PartialQ1 = partialQ(0.8748,_,[cl(_366732),cl(_366164),cl(_366272),on(a,_369666),on(_366732,a),on(_366164,b)]),
-    PartialQ2 = partialQ(0.0729,_,[cl(_758718),cl(_758150),cl(_758258),on(a,_760844),on(_758718,a),on(_758150,b)]),
-    writeln(PartialQ1),
-    writeln(PartialQ2),
-    % writeln(Qrule),
-    nl.
-
-printspp(_, _, _).
-
-printsppp(PartialQ1, PartialQ2, Qrule, N):-
-    PartialQ1 = partialQ(0.8748,_,_),
-    PartialQ2 = partialQ(0.0729,_,_),
-    writeln(PartialQ1),
-    writeln(PartialQ2),
-    % writeln(N),
-    writeln(Qrule),
-    nl.
-
-printsppp(_, _, _, _).
+% %
+% printsp([]):-!.
+% printsp([PQ|R]):-
+%     PQ = partialQ(Q,A,S),
+%     A = move(X,Y,Z),
+%     X \== a, X \== b, Y \== a, Y \== b, Z \== a, Z \== b,
+%     % get_attr(DD, dif, Value),
+%     writeln(PQ),
+%     % writeln(Value),
+%     printsp(R), !.
+% printsp([partialQ(_,_,_)|R]):-
+%     printsp(R), !.
+%
+%
+% printspp(PartialQ1, PartialQ2, Qrule):-
+%     PartialQ1 = partialQ(0.8748,_,[cl(_366732),cl(_366164),cl(_366272),on(a,_369666),on(_366732,a),on(_366164,b)]),
+%     PartialQ2 = partialQ(0.0729,_,[cl(_758718),cl(_758150),cl(_758258),on(a,_760844),on(_758718,a),on(_758150,b)]),
+%     writeln(PartialQ1),
+%     writeln(PartialQ2),
+%     % writeln(Qrule),
+%     nl.
+%
+% printspp(_, _, _).
+%
+% printsppp(PartialQ1, PartialQ2, Qrule, N):-
+%     PartialQ1 = partialQ(0.8748,_,_),
+%     PartialQ2 = partialQ(0.0729,_,_),
+%     writeln(PartialQ1),
+%     writeln(PartialQ2),
+%     % writeln(N),
+%     writeln(Qrule),
+%     nl.
+%
+% printsppp(_, _, _, _).
