@@ -1,6 +1,5 @@
 :- module(sorting, [sortByQValue/2, list_to_set1/2,
-                    subsumesort/2, rcompare/3, scompare/3, acompare/3,
-                    qcompare/3, predInList/3]).
+                    subsumesort/2, predInList/3]).
 
 
 % This is for a newer version of swi prolog
@@ -246,49 +245,6 @@ qcompare(<, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
 qcompare(>, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
     scompare(=, S1, S2),
     acompare(>, A1, A2), !.
-
-
-% ================================
-% mypredsort(P, L, R) :-
-%     '$skip_list'(N, L, Tail),
-%     (   Tail == []
-%     ->  mypredsort(P, N, L, _, R1),
-%         R = R1
-%     ;   must_be(L, list)
-%     ).
-
-% mypredsort(P, 2, [X1, X2|L], L, R) :-
-%     !,
-%     call(P, Delta, X1, X2),
-%     sort2(Delta, X1, X2, R).
-% mypredsort(_, 1, [X|L], L, [X]) :- !.
-% mypredsort(_, 0, L, L, []) :- !.
-% mypredsort(P, N, L1, L3, R) :-
-%     N1 is N // 2,
-%     plus(N1, N2, N),
-%     mypredsort(P, N1, L1, L2, R1),
-%     mypredsort(P, N2, L2, L3, R2),
-%     mypredmerge(P, R1, R2, R).
-%
-% sort2(<, X1, X2, [X1, X2]).
-% % sort2(=, X1, _, [X1]).
-% sort2(=, X1, X2, [X1, X2]).
-% sort2(>, X1, X2, [X2, X1]).
-%
-% mypredmerge(_, [], R, R) :- !.
-% mypredmerge(_, R, [], R) :- !.
-% mypredmerge(P, [H1|T1], [H2|T2], Result) :-
-%     call(P, Delta, H1, H2),
-%     !,
-%     mypredmerge(Delta, P, H1, H2, T1, T2, Result).
-%
-% mypredmerge(>, P, H1, H2, T1, T2, [H2|R]) :-
-%     mypredmerge(P, [H1|T1], T2, R).
-% mypredmerge(=, P, H1, _, T1, T2, [H1|R]) :-
-%     mypredmerge(P, T1, T2, R).
-% mypredmerge(<, P, H1, H2, T1, T2, [H1|R]) :-
-%     mypredmerge(P, T1, [H2|T2], R).
-% ================================
 
 
 

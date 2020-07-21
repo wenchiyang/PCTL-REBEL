@@ -1,4 +1,4 @@
-:- module(main, [evaluate/2]).
+:- module(main, [evaluate/1]).
 :- use_module(library(chr)).
 :- use_module(precond).
 :- use_module(sorting).
@@ -158,25 +158,25 @@ experiment5_inner5 :-
     noprotocol.
 
 
-experiment5_outer1 :-
-    protocol('experiments/exp5.txt'),
-    statistics(runtime, [Start|_]),
-    evaluate(
-        until(1, [[cl(a)]],
-            and(
-                [[on(a,b)]],
-                until(2,
-                    next([[cl(e)]], >=, 0.9, _),
-                    [[on(c,d)]],
-                    >=, 0.9, _
-                ),
-                _
-            ),
-        >=, 0.5, Res),
-    Res), !,
-    statistics(runtime, [Stop|_]),
-    print_message(informational, exetime(Start, Stop)),
-    noprotocol.
+% experiment5_outer1 :-
+%     protocol('experiments/exp5.txt'),
+%     statistics(runtime, [Start|_]),
+%     evaluate(
+%         until(1, [[cl(a)]],
+%             and(
+%                 [[on(a,b)]],
+%                 until(2,
+%                     next([[cl(e)]], >=, 0.9, _),
+%                     [[on(c,d)]],
+%                     >=, 0.9, _
+%                 ),
+%                 _
+%             % ),
+%         >=, 0.5, Res),
+%     Res), !,
+%     statistics(runtime, [Stop|_]),
+%     print_message(informational, exetime(Start, Stop)),
+%     noprotocol.
 
 experiment5_outer2 :-
     protocol('experiments/exp5.txt'),
@@ -263,63 +263,62 @@ experiment5_outer5 :-
 % Syntax checking -- Do not allow [].
 % evaluate(Phi, []) :- functor(Phi, [], _), !.
 % Phi is a set
-evaluate(Phi, Phi) :-
-    functor(Phi, '[|]', _), !.
+evaluate(Phi) :-
+    Phi =.. [states, _], !.
+    % functor(Phi, '[|]', _), !.
 
 % evaluate step-bounded until formula:
 % PhiStates == P_{Op Threshold} [Phi1 U^{<= Steps} Phi2]
-evaluate(Phi, PhiStates) :-
-    Phi =.. [until, Steps, Phi1, Phi2, Op, Threshold, PhiStates],
-    evaluate(Phi1, Phi1States), !,
-    evaluate(Phi2, Phi2States), !,
-    apply(until, [Steps, Phi1States, Phi2States, Op, Threshold, PhiStates]), !,
-    print_message(informational, phistates(Phi, PhiStates)).
+evaluate(Phi) :-
+    Phi =.. [until, PhiStates, Steps, Phi1, Phi2, Op, Threshold],
+    evaluate(Phi1), !, arg(1, Phi1, Phi1States),
+    evaluate(Phi2), !, arg(1, Phi2, Phi2States),
+    apply(until, [PhiStates, Steps, Phi1States, Phi2States, Op, Threshold]), !,
+    print_message(informational, phistates(Phi)).
 
 % evaluate next formula:
 % PhiStates == P_{Op Threshold} [X Phi2]
-evaluate(Phi, PhiStates) :-
-    Phi =.. [next, Phi2, Op, Threshold, PhiStates],
-    evaluate(Phi2, Phi2States), !,
-    apply(next, [Phi2States, Op, Threshold, PhiStates]), !,
-    print_message(informational, phistates(Phi, PhiStates)).
+evaluate(Phi) :-
+    Phi =.. [next, PhiStates, Phi2, Op, Threshold],
+    evaluate(Phi2), !, arg(1, Phi2, Phi2States),
+    apply(next, [PhiStates, Phi2States, Op, Threshold]), !,
+    print_message(informational, phistates(Phi)).
 
 % evaluate and formula:
 % PhiStates == Phi1 and Phi2
-evaluate(Phi, PhiStates) :-
-    Phi =.. [and, Phi1, Phi2, PhiStates],
-    evaluate(Phi1, Phi1States), !,
-    evaluate(Phi2, Phi2States), !,
-    apply(and, [Phi1States, Phi2States, PhiStates]), !,
-    list_to_set1(PhiStates, SortedStates),
-    length(PhiStates, L1), length(SortedStates, L2), writeln([L1,L2]),
-    print_message(informational, phistates(Phi, SortedStates)).
+evaluate(Phi) :-
+    Phi =.. [and, PhiStates, Phi1, Phi2],
+    evaluate(Phi1), !, arg(1, Phi1, Phi1States),
+    evaluate(Phi2), !, arg(1, Phi2, Phi2States),
+    apply(and, [PhiStates, Phi1States, Phi2States]), !,
+    % list_to_set1(PhiStates, SortedStates),
+    % length(PhiStates, L1), length(SortedStates, L2),
+    print_message(informational, phistates(Phi)).
 
 
 % get cartesian product of two state lists,
 % Res is a list of combined states
-and([], _, []):-!.
-and([E1|States1], States2, Res):-
+and([], [], _) :- !.
+and(Res, [E1|States1], States2):-
     maplist(andstate(E1), States2, PartialRes),
     delete(PartialRes, [], PartialRes1),
     append(PartialRes1, PhiStates, Res),
-    and(States1, States2, PhiStates).
+    and(PhiStates, States1, States2).
 
-until(Steps, Phi1s, Phi2s, Op, Threshold, SortedStates) :-
+until(SortedStates, Steps, Phi1s, Phi2s, Op, Threshold) :-
     maplist(constructAbsorbingVFs,Phi2s,InitV), !,
     maplist(constructAbsorbingQs,Phi2s,Phi2sQs), !,
     vi(Steps, 1, InitV, _, Phi1s, Phi2sQs, FinalVs), !,
     % TODO combine filter and getVFStates to optimize
     filter(FinalVs, Op, Threshold, NewVN), !,
     getVFStates(NewVN, SortedStates),
-    %list_to_set1(States, SortedStates),
     !.
 
-next(Phi2s, Op, Threshold, SortedStates) :-
+next(SortedStates, Phi2s, Op, Threshold) :-
     maplist(constructAbsorbingVFs,Phi2s,InitV), !,
     vi(1, 1, InitV, _,[[]], [], FinalVs), !,
     filter(FinalVs, Op, Threshold, NewVN), !,
     getVFStates(NewVN, SortedStates),
-    %list_to_set1(States, SortedStates),
     !.
 
 convergence([], [], _) :- !.

@@ -7,22 +7,53 @@
 :- use_module(setting).
 
 experiment1:-
-    % protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(10, [[]], [[on(a,b)]], >=, 0.5, Res), Res), !,
+    evaluate(until(_, 3, states([[]]), states([[on(a,b)]]), >=, 0.5)), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,R|_],
-    print_message(informational, exetime(Start, Stop)).
-    % noprotocol.
+    protocola('experiments/exp1.txt'),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
 
 experiment2:-
-    % protocol('experiments/exp1_singlethread.txt'),
     statistics(runtime, [Start|_]),
-    evaluate(until(6, [[on(c,d)]], [[on(a,b)]], >=, 0.6, Res), Res), !,
+    evaluate(until(_, 6, states([[on(c,d)]]), states([[on(a,b)]]), >=, 0.6)), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,_,R|_],
+    protocola('experiments/exp2.txt'),
+    print_message(informational, exetime(Start, Stop)),
+    noprotocol.
+
+
+experiment5_outer1 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            1,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    2,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)).
-    % noprotocol.
+
+
+% ex:-
+%     protocol('experiments/test1.txt'),
+%     print_message(informational, exetime(0.0, 1.0)),
+%     print_message(informational, exetime(0.0, 2.0)),
+%     noprotocol.
 %%
 %%
 
@@ -59,8 +90,10 @@ without_last(WithLast, WithoutLast) :-
     L1 is L-1,
     prefix(WithoutLast, WithLast).
 
-message_hook(phistates(Phi, PhiStates), informational, _):-
-  Phi =.. Operation,
-  without_last(Operation, Output), nl, nl,
-  writeln("query: "), writeln(Output), nl,
+
+message_hook(phistates(Phi), informational, _):-
+  Phi =.. [ Functor, PhiStates | Rest ],
+  % without_last(Operation, Output),
+  nl, nl,
+  writeln("query: "), write(Functor), writeln(Rest), nl,
   writeln("answer: "), printall(PhiStates), nl, nl.
