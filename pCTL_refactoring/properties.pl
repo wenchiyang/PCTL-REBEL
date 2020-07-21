@@ -13,7 +13,23 @@ experiment1:-
     % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
+experimentX_iter_1 :-
+    statistics(runtime, [Start|_]),
+    evaluate(next(_, states([[on(a,b)]]), >=, 0.9)), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
 
+experimentF_iter_1 :-
+    statistics(runtime, [Start|_]),
+    evaluate(until(_, 1, states([[]]), states([[on(a,b)]]), >=, 0.9)), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
+
+experimentU_iter_1 :-
+    statistics(runtime, [Start|_]),
+    evaluate(until(_, 1, states([[on(c,d)]]),states([[on(a,b)]]), >=, 0.9)), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
 
 experiment2:-
     statistics(runtime, [Start|_]),
@@ -23,6 +39,116 @@ experiment2:-
     % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
+experiment5_inner1 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            4,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    1,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+experiment5_inner2 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            4,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    2,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+experiment5_inner3 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            4,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    3,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+experiment5_inner4 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            4,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    4,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+experiment5_inner5 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            4,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    5,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
 
 experiment5_outer1 :-
     statistics(runtime, [Start|_]),
@@ -47,14 +173,98 @@ experiment5_outer1 :-
     % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
+experiment5_outer2 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            2,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    2,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
 
-% ex:-
-%     protocol('experiments/test1.txt'),
-%     print_message(informational, exetime(0.0, 1.0)),
-%     print_message(informational, exetime(0.0, 2.0)),
-%     noprotocol.
-%%
-%%
+experiment5_outer3 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            3,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    2,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
+experiment5_outer4 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            4,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    2,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
+experiment5_outer5 :-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_,
+            5,
+            states([[cl(a)]]),
+            and(
+                _,
+                states([[on(a,b)]]),
+                until(
+                    _,
+                    2,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.9
+                )
+            ),
+        >=, 0.5)
+    ), !,
+    statistics(runtime, [Stop|_]),
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
 
 
 message_hook(exetime(Start, Stop), informational, _):-
