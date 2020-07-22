@@ -18,6 +18,7 @@ stateGroup(State, GroupedState):-
 
 
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 relationsort(Relations, OrderedRelations):-
@@ -42,6 +43,7 @@ relationcompare(=, A, B) :- A == B, !.
 %         : used to sort a state (list of relations)
 %%%%%
 % cl/1 before on/2
+rcompare(=, A, B):- A == B, !.
 rcompare(<, cl(_), on(_,_)) :- !.
 rcompare(>, on(_,_), cl(_)) :- !.
 % ground before unground
@@ -59,8 +61,7 @@ rcompare(<, cl(A), cl(B)) :-
     \+ground(A), \+ground(B), A @< B, !.
 rcompare(>, cl(A), cl(B)) :-
     \+ground(A), \+ground(B), A @> B, !.
-rcompare(=, cl(A), cl(B)) :-
-    compare(=, A, B), !.
+
 
 % more ground vars before less ground vars
 rcompare(<, on(A,B), on(C,D)) :-
@@ -80,57 +81,52 @@ rcompare(>, on(A,B), on(C,D)) :-
 
 rcompare(<, on(A,B), on(C,D)) :-
     term_variables(on(A,B), []), term_variables(on(C,D), []),
-    compare(<, A, C), !.
+    A @< C, !.
 rcompare(>, on(A,B), on(C,D)) :-
     term_variables(on(A,B), []), term_variables(on(C,D), []),
-    compare(>, A, C), !.
+    A @> C, !.
 rcompare(<, on(A,B), on(C,D)) :-
     term_variables(on(A,B), []), term_variables(on(C,D), []),
-    compare(=, A, C), compare(<, B, D),!.
+    A == C, B @< D, !.
 rcompare(>, on(A,B), on(C,D)) :-
     term_variables(on(A,B), []), term_variables(on(C,D), []),
-    compare(=, A, C), compare(>, B, D),!.
-
+    A == C, B @> D, !.
 rcompare(<, on(A,B), on(C,D)) :-
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
-    compare(<, A, C), !.
+    A @< C, !.
 rcompare(>, on(A,B), on(C,D)) :-
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
-    compare(>, A, C), !.
+    A @> C, !.
 rcompare(<, on(A,B), on(C,D)) :-
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
-    compare(=, A, C), compare(<, B, D),!.
+    A == C, B @< D, !.
 rcompare(>, on(A,B), on(C,D)) :-
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
-    compare(=, A, C), compare(>, B, D),!.
-
+    A == C, B @> D, !.
 rcompare(<, on(A,B), on(C,D)) :-
     ground(A), \+ground(B), ground(C), \+ground(D),
-    compare(<, A, C), !.
+    A @< C, !.
 rcompare(>, on(A,B), on(C,D)) :-
     ground(A), \+ground(B), ground(C), \+ground(D),
-    compare(>, A, C), !.
+    A @> C, !.
 rcompare(<, on(A,B), on(C,D)) :-
     ground(A), \+ground(B), ground(C), \+ground(D),
-    compare(=, A, C), compare(<, B, D),!.
+    A == C, B @< D, !.
 rcompare(>, on(A,B), on(C,D)) :-
     ground(A), \+ground(B), ground(C), \+ground(D),
-    compare(=, A, C), compare(>, B, D),!.
-
+    A == C, B @> D, !.
 rcompare(<, on(A,B), on(C,D)) :-
     \+ground(A), ground(B), \+ground(C), ground(D),
-    compare(<, B, D), !.
+    B @< D, !.
 rcompare(>, on(A,B), on(C,D)) :-
     \+ground(A), ground(B), \+ground(C), ground(D),
-    compare(>, B, D), !.
+    B @> D, !.
 rcompare(<, on(A,B), on(C,D)) :-
     \+ground(A), ground(B), \+ground(C), ground(D),
-    compare(=, B, D), compare(<, A, C),!.
+    B == D, A @< C, !.
 rcompare(>, on(A,B), on(C,D)) :-
     \+ground(A), ground(B), \+ground(C), ground(D),
-    compare(=, B, D), compare(>, A, C),!.
-
-rcompare(=, on(A,B), on(C,D)) :- compare(=, A, C), compare(=, B, D), !.
+    B == D, A @> C, !.
 
 
 
@@ -176,6 +172,8 @@ scompare(R, S1, S2) :-
 % %%%%
 acompare(=, A1, A2):-
     A1 == A2, !.
+
+% more ground terms before less ground terms
 acompare(<, move(A1,B1,C1), move(A2,B2,C2)):-
     term_variables(move(A1,B1,C1), Vars1),
     term_variables(move(A2,B2,C2), Vars2),
@@ -186,6 +184,7 @@ acompare(>, move(A1,B1,C1), move(A2,B2,C2)):-
     term_variables(move(A2,B2,C2), Vars2),
     length(Vars1, L1), length(Vars2, L2),
     L1 > L2, !.
+% compare one by one
 acompare(<, move(A1,B1,C1), move(A2,B2,C2)):-
     term_variables(move(A1,B1,C1), Vars1),
     term_variables(move(A2,B2,C2), Vars2),
