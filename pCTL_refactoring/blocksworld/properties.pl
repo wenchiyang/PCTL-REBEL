@@ -1,8 +1,6 @@
-:- use_module(main).
-:- use_module(library(chr)).
-:- use_module(chr(chr_runtime)).
+:- use_module('../main').
 :- use_module(precond).
-:- use_module(setting).
+
 
 experiment1:-
     statistics(runtime, [Start|_]),

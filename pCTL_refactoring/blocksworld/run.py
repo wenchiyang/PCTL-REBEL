@@ -1,6 +1,5 @@
 from visualization import visualizeBlocksworld
 import subprocess
-from time import sleep
 
 expFolder = 'experiments/'
 

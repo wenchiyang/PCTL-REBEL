@@ -1,7 +1,7 @@
 :- module(precond, [on/2, cl/1, clean/0, findstate/1, collect/0]).
 :- use_module(library(chr)).
-
 :- use_module(chr(chr_runtime)).
+
 %:- set_prolog_flag(optimize, full).
 
 % module of generating available actions, i.e. move/3, from the input precondition

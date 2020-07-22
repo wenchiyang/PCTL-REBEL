@@ -5,6 +5,8 @@
                     transition/5,
                     mydif/2]).
 
+% file_search_path(domain, 'blocksworld').
+
 nonDetActions(nondet). % nondet/det
 blocks_limit(6). % non/an integer > 3
 discountfactor(1). %

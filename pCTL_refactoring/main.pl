@@ -1,11 +1,8 @@
 :- module(main, [evaluate/1]).
-:- use_module(library(chr)).
-:- use_module(precond).
 :- use_module(sorting).
 :- use_module(util).
-:- set_prolog_flag(stack_limit, 12000000000).
-:- use_module(chr(chr_runtime)).
 :- use_module(setting).
+:- set_prolog_flag(stack_limit, 12000000000).
 %:- set_prolog_flag(optimize,full).
 
 
