@@ -1,8 +1,7 @@
-:- module(util, [subsetgen/2, extract/1,
-mergestacks/2, constructAbsorbingVFs/2,
+:- module(util, [subsetgen/2, extract/1, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/3, filter/4,
 getVFStates/2, andstate/3, oi_qrule/1, legalstate/1,
-thetasubsumes/2, getallstuff/1, cartesian_dif/2,
+thetasubsumes/2, getstate/1, cartesian_dif/2,
  generateOIstate/2]).
 
 :- use_module(sorting).
@@ -80,33 +79,20 @@ extract([E|L]):-
    extract(L), !.
 
 % create a subset SubS2 of S2 that has the
-% same structure as S1
-% S1 is an state template (list of nonground cl/1 and on/2)
+% same structure as SubH
+% SubH is an state template (list of nonground cl/1 and on/2)
 % S2 is a state
-% output: ClSubS2, OnSubS2
-
-% structsubset(LClSubH, LOnSubH, S2, ClSubS2, OnSubS2):-
-%     predInList(S2, cl, ClS2),
-%     predInList(S2, on, OnS2),
-%     length(ClSubS2, LClSubH),
-%     length(OnSubS2, LOnSubH),
-%     subsetgen(ClS2, ClSubS2),
-%     subsetgen(OnS2, OnSubS2).
-
-structsubset(SubH, S2, SubHp):-
-    predInList(SubH, cl, ClSubH), length(ClSubH, LClSubH),
-    predInList(SubH, on, OnSubH), length(OnSubH, LOnSubH),
-    predInList(S2, cl, ClS2),
-    predInList(S2, on, OnS2),
-    length(ClSubS2, LClSubH), subsetgen(ClS2, ClSubS2),
-    length(OnSubS2, LOnSubH), subsetgen(OnS2, OnSubS2),
+% output: SubS2
+structsubset(SubH, S2, SubS2):-
+    stateGroup(SubH, GroupedSubH),
+    maplist(length, GroupedSubH, LGroupedSubH),
+    stateGroup(S2, GroupedS2),
+    maplist(length, GroupedSubS2, LGroupedSubH),
+    maplist(subsetgen, GroupedS2, GroupedSubS2),
     % create all possible \theta
-    permutation(ClSubH, ClSubHp),
-    ClSubHp = ClSubS2,
-    permutation(OnSubH, OnSubHp),
-    OnSubHp = OnSubS2,
-    append(ClSubHp, OnSubHp, SubHp).
-
+    maplist(permutation, GroupedSubH, GroupedSubHp),
+    maplist(=, GroupedSubHp, GroupedSubS2),
+    flatten(GroupedSubS2, SubS2).
 
 
 % take(OldState, [ClL, OnL], NewState): NewState contains the first
@@ -133,18 +119,17 @@ structsubset(SubH, S2, SubHp):-
 
 % can we optimize find_stacks(Stacks) s.t. it returns StaSize, StaStr directly
 % to get rid of getstrnum/3? No, because we sort_numbers that sorts
-stateMetaData(StaSize, StaStr, StackSorted):-
-    collect, collect_unclear,
-    collectstack, find_stacks(Stacks), !,
-    % Stacks/StackSorted is a list of sta([ClL,OnL], State)
-    sort_numbers(Stacks, StackSorted), !,
-    getstrnum(StackSorted, StaSize, StaStr), !,
-    clean, !.
+% stateMetaData(StaSize, StaStr, StackSorted):-
+%     collect, collect_unclear,
+%     collectstack, find_stacks(Stacks), !,
+%     % Stacks/StackSorted is a list of sta([ClL,OnL], State)
+%     sort_numbers(Stacks, StackSorted), !,
+%     getstrnum(StackSorted, StaSize, StaStr), !,
+%     clean, !.
 
-getallstuff(Glb):-
-    getall,
-    % writeln("getall"), chr_show_store(precond), nl, nl,
-    allstuff(Glb1), clean, !,
+getstate(Glb):-
+    collect,
+    findstate(Glb1), clean, !,
     subsumesort(Glb1,Glb).
 
 % mergestacks([], [], []) :- !.
@@ -163,25 +148,25 @@ getallstuff(Glb):-
 %     append(Cls, Ons, Glb), !.
 
 % another version (not better)
-mergestacks([], [], []) :- !.
-mergestacks([Stack|RStacks], [ClStack|RCls], [OnStack|ROns]):-
-    predInList(Stack, cl, ClStack),
-    predInList(Stack, on, OnStack),
-    mergestacks(RStacks, RCls, ROns), !.
-
-mergestacks(Stacks, Glb):-
-    mergestacks(Stacks, Cls, Ons), !,
-    flatten(Cls, FlatCls), !,
-    flatten(Ons, FlatOns), !,
-    append(FlatCls, FlatOns, Glb), !.
+% mergestacks([], [], []) :- !.
+% mergestacks([Stack|RStacks], [ClStack|RCls], [OnStack|ROns]):-
+%     predInList(Stack, cl, ClStack),
+%     predInList(Stack, on, OnStack),
+%     mergestacks(RStacks, RCls, ROns), !.
+%
+% mergestacks(Stacks, Glb):-
+%     mergestacks(Stacks, Cls, Ons), !,
+%     flatten(Cls, FlatCls), !,
+%     flatten(Ons, FlatOns), !,
+%     append(FlatCls, FlatOns, Glb), !.
 
 % getstrnum(Stas,StrNums,Strs):
 % Stas is a list of sta([ClL,OnL], State)
 % StrNums is the [ClL,OnL] part
 % Strs is the State part
-getstrnum([], [], []) :- !.
-getstrnum([sta(L,S)|Str], [L|StrNum], [S|StrS]):-
-    getstrnum(Str,StrNum,StrS), !.
+% getstrnum([], [], []) :- !.
+% getstrnum([sta(L,S)|Str], [L|StrNum], [S|StrS]):-
+%     getstrnum(Str,StrNum,StrS), !.
 
 % This is for an older version of swi prolog
 % predInList(OldState, ClOn, NewState): NewState contains all ClOn
@@ -230,52 +215,13 @@ constructAbsorbingQs(S, q(1.0, _, S)).
 %     mergestacks(StaStr, Result), !.
 andstate(E1, E2, Result):-
     extract(E1), extract(E2),
-    getallstuff(Result), !.
+    getstate(Result), !.
 % if E1 and E2 cannot be combined, return []
 andstate(_, _, []):-!.
 
 
-
-% read the setting: bounded or unbounded
-% legalstate(S, _):-
-%     blocks_limit(non), !,
-%     legalstateUnbounded(S), !.
-%
-% legalstate(_, Size):-
-%     \+blocks_limit(non), !,
-%     legalstatebounded(Size), !.
-%
-%
-% legalstateUnbounded(S):-
-%   extract(S), clean, !.
-%
-% legalstatebounded(Size):-
-%     extract(S), clean, !,
-%     blocks_limit(MaxBlocks),
-%     onSize(Size, OnSize),
-%     sum_list(OnSize, B), !,
-%     B =< MaxBlocks.
-
-% boundedstate(S,B):-
-%     termsInState(S),
-%     list_to_set(Terms, TermSet),
-%     length(TermSet, BB),
-%     BB =< B.
-
 legalstate(S):-
   extract(S), clean, !.
-
-% onSize([], []):-!.
-% onSize([[_,On]|Size], [On1|R]):-
-%     On1 is On+1,
-%     onSize(Size, R), !.
-
-% min_num_blocks(S, N): state S has at least N blocks
-min_num_blocks(S, N):-
-    termsInState(S, ListBlocks), !,
-    duplicate_term(ListBlocks, ListBlocks1), !,
-    list_to_set1(ListBlocks1, SetBlocks), !,
-    length(SetBlocks, N), !.
 
 
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
@@ -306,7 +252,6 @@ generateBoundedStates(State, TermSet, LargestObjectNum, ObjectBound):-
     LargestObjectNum > ObjectBound,
     generateOIstate(TermSet, TermSetSet),
     legalstate(State),
-
     length(TermSetSet, LTermSetSet),
     LTermSetSet =< ObjectBound.
 
@@ -330,41 +275,3 @@ oi_qrule(partialQ(_,_,S)):-
     blocks_limit(ObjectBound),
     generateBoundedStates(S, TermSet, LargestObjectNum, ObjectBound).
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
-
-
-
-%
-% %
-% printsp([]):-!.
-% printsp([PQ|R]):-
-%     PQ = partialQ(Q,A,S),
-%     A = move(X,Y,Z),
-%     X \== a, X \== b, Y \== a, Y \== b, Z \== a, Z \== b,
-%     % get_attr(DD, dif, Value),
-%     writeln(PQ),
-%     % writeln(Value),
-%     printsp(R), !.
-% printsp([partialQ(_,_,_)|R]):-
-%     printsp(R), !.
-%
-%
-% printspp(PartialQ1, PartialQ2, Qrule):-
-%     PartialQ1 = partialQ(0.8748,_,[cl(_366732),cl(_366164),cl(_366272),on(a,_369666),on(_366732,a),on(_366164,b)]),
-%     PartialQ2 = partialQ(0.0729,_,[cl(_758718),cl(_758150),cl(_758258),on(a,_760844),on(_758718,a),on(_758150,b)]),
-%     writeln(PartialQ1),
-%     writeln(PartialQ2),
-%     % writeln(Qrule),
-%     nl.
-%
-% printspp(_, _, _).
-%
-% printsppp(PartialQ1, PartialQ2, Qrule, N):-
-%     PartialQ1 = partialQ(0.8748,_,_),
-%     PartialQ2 = partialQ(0.0729,_,_),
-%     writeln(PartialQ1),
-%     writeln(PartialQ2),
-%     % writeln(N),
-%     writeln(Qrule),
-%     nl.
-%
-% printsppp(_, _, _, _).

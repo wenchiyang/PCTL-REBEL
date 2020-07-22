@@ -266,7 +266,7 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
         partialQ(NewVFValue, Act, Glb)) :-
     member(Phi1, Phi1s), extract(Phi1), extract(VFSTail), extract(Body),
-    getallstuff(GlbTT),
+    getstate(GlbTT),
     subsumesort(GlbTT, Glb),
     sort(Head, HeadTT), sort(Body, BodyTT),
     ord_union(HeadTT, BodyTT, Lpp),

@@ -1,5 +1,5 @@
 :- module(sorting, [sortByQValue/2, list_to_set1/2,
-                    subsumesort/2, predInList/3]).
+                    subsumesort/2, predInList/3, stateGroup/2]).
 
 
 % This is for a newer version of swi prolog
@@ -9,15 +9,31 @@ predInList(OldState, Type, NewState):-
 subsumesort(List, Sorted):-
     predsort(rcompare, List, Sorted), !.
 
-count_ground([] , 0):- !.
-count_ground([E|R], Num):-
-    ground(E),
-    count_ground(R, RNum),
-    Num is RNum+1, !.
+% This is assumed to be sorted by relationsort/2
+relations([cl, on]).
 
-count_ground([E|R], Num):-
-    \+ground(E),
-    count_ground(R, Num), !.
+%
+stateGroup(State, GroupedState):-
+    relations(Relations),
+    maplist(predInList(State), Relations, GroupedState).
+
+% count_ground([] , 0):- !.
+% count_ground([E|R], Num):-
+%     ground(E),
+%     count_ground(R, RNum),
+%     Num is RNum+1, !.
+%
+% count_ground([E|R], Num):-
+%     \+ground(E),
+%     count_ground(R, Num), !.
+
+
+relationsort(Relations, OrderedRelations):-
+    predsort(relationcompare, Relations, OrderedRelations).
+
+relationcompare(<, cl, on) :- !.
+relationcompare(>, on, cl) :- !.
+relationcompare(=, A, B) :- A == B, !.
 
 
 %%%%%
@@ -62,36 +78,28 @@ rcompare(>, on(A,B), on(C,D)) :-
 
 
 rcompare(<, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 2), count_ground([C,D], 2), compare(<, A, C), !.
     term_variables(on(A,B), []), term_variables(on(C,D), []),
     compare(<, A, C), !.
 rcompare(>, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 2), count_ground([C,D], 2),
     term_variables(on(A,B), []), term_variables(on(C,D), []),
     compare(>, A, C), !.
 rcompare(<, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 2), count_ground([C,D], 2),
     term_variables(on(A,B), []), term_variables(on(C,D), []),
     compare(=, A, C), compare(<, B, D),!.
 rcompare(>, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 2), count_ground([C,D], 2),
     term_variables(on(A,B), []), term_variables(on(C,D), []),
     compare(=, A, C), compare(>, B, D),!.
 
 rcompare(<, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 0), count_ground([C,D], 0),
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
     compare(<, A, C), !.
 rcompare(>, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 0), count_ground([C,D], 0),
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
     compare(>, A, C), !.
 rcompare(<, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 0), count_ground([C,D], 0),
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
     compare(=, A, C), compare(<, B, D),!.
 rcompare(>, on(A,B), on(C,D)) :-
-    % count_ground([A,B], 0), count_ground([C,D], 0),
     term_variables(on(A,B), [A,B]), term_variables(on(C,D), [C,D]),
     compare(=, A, C), compare(>, B, D),!.
 
