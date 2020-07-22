@@ -1,6 +1,5 @@
 :- module(sorting, [sortByQValue/2, list_to_set1/2,
-                    subsumesort/2, predInList/3, stateGroup/2,
-                    termsInState/2]).
+                    subsumesort/2, predInList/3, stateGroup/2]).
 
 
 
@@ -16,16 +15,6 @@ stateGroup(State, GroupedState):-
     relations(Relations),
     maplist(predInList(State), Relations, GroupedState).
 
-% termsInState([], []) :- !.
-% termsInState([cl(X)|S], [X|B]):-
-%     termsInState(S, B), !.
-% termsInState([on(X,Y)|S], [X,Y|B]):-
-%     termsInState(S, B), !.
-
-termsInState(State, Terms):-
-    maplist([Pred, Args]>> =..(Pred,[_|Args]), State, ArgsList),
-    flatten(ArgsList, TermsList),
-    list_to_set(TermsList, Terms).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

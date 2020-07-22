@@ -98,8 +98,10 @@ legalstate(S):-
 
 
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
-
-
+termsInState(State, Terms):-
+    maplist([Pred, Args]>> =..(Pred,[_|Args]), State, ArgsList),
+    flatten(ArgsList, TermsList),
+    list_to_set(TermsList, Terms).
 
 % generateOIstate(NonOIState, OIState)
 % this uses backtracking to create all oi specifications
@@ -127,10 +129,9 @@ oi_qrule(q(_,_,_)):-
 
 oi_qrule(q(_,_,S)):-
     termsInState(S, Terms),
-    list_to_set(Terms, TermSet),
-    length(TermSet, LargestObjectNum),
+    length(Terms, LargestObjectNum),
     blocks_limit(ObjectBound),
-    generateBoundedStates(S, TermSet, LargestObjectNum, ObjectBound).
+    generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
 
 oi_qrule(partialQ(_,_,_)):-
     blocks_limit(non), !.
