@@ -258,6 +258,7 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
              partialQ(Q,A,S)),
     oi_qrule(partialQ(Q,A,S)).
+    % writeln(partialQ(Q,A,S)).
 
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,

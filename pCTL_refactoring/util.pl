@@ -98,12 +98,7 @@ legalstate(S):-
 
 
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
-% get number of terms
-termsInState([], []) :- !.
-termsInState([cl(X)|S], [X|B]):-
-    termsInState(S, B), !.
-termsInState([on(X,Y)|S], [X,Y|B]):-
-    termsInState(S, B), !.
+
 
 
 % generateOIstate(NonOIState, OIState)
