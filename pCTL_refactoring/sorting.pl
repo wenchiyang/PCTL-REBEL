@@ -2,12 +2,10 @@
                     subsumesort/2, predInList/3, stateGroup/2]).
 
 
+
 % This is for a newer version of swi prolog
 predInList(OldState, Type, NewState):-
     include([X]>>functor(X, Type, _), OldState, NewState), !.
-
-subsumesort(List, Sorted):-
-    predsort(rcompare, List, Sorted), !.
 
 % This is assumed to be sorted by relationsort/2
 relations([cl, on]).
@@ -17,20 +15,23 @@ stateGroup(State, GroupedState):-
     relations(Relations),
     maplist(predInList(State), Relations, GroupedState).
 
-% count_ground([] , 0):- !.
-% count_ground([E|R], Num):-
-%     ground(E),
-%     count_ground(R, RNum),
-%     Num is RNum+1, !.
-%
-% count_ground([E|R], Num):-
-%     \+ground(E),
-%     count_ground(R, Num), !.
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 relationsort(Relations, OrderedRelations):-
     predsort(relationcompare, Relations, OrderedRelations).
 
+sortByQValue(List, Sorted):-
+    predsort(qcompare, List, Sorted), !.
+
+subsumesort(List, Sorted):-
+    predsort(rcompare, List, Sorted), !.
+
+%%%
+% rcompare
+%%%
 relationcompare(<, cl, on) :- !.
 relationcompare(>, on, cl) :- !.
 relationcompare(=, A, B) :- A == B, !.
@@ -133,8 +134,6 @@ rcompare(=, on(A,B), on(C,D)) :- compare(=, A, C), compare(=, B, D), !.
 
 
 
-
-
 %%%%%
 % scompare: state compare : state1 and state2 are ORDERED lists
 %%%%%
@@ -218,11 +217,9 @@ acompare(>, move(A1,B1,C1), move(A2,B2,C2)):-
     length(Vars1, L), length(Vars2, L),
     A1 == A2, B1 == B2, C1 @> C2, !.
 
-
-
-
-sortByQValue(List, Sorted):-
-    predsort(qcompare, List, Sorted), !.
+%%%
+%
+%%%
 
 qcompare(=, QRule1, QRule2):- QRule1 == QRule2, !.
 qcompare(<, q(Q1,_,_), q(Q2,_,_)):- Q1 > Q2, !.
@@ -255,7 +252,7 @@ qcompare(>, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
     acompare(>, A1, A2), !.
 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % list_to_set1(L1, L2): L2 is a set of a list L1
 % after trying to bind elements
 list_to_set1([], []) :- !.

@@ -259,8 +259,8 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
     ord_subtract(VFStateTT, SubHpTT, VFSTail),
     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-             partialQ(Q,A,S)).
-    % oi_qrule(partialQ(Q,A,S)).
+             partialQ(Q,A,S)),
+    oi_qrule(partialQ(Q,A,S)).
 
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
@@ -271,10 +271,6 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
     sort(Head, HeadTT), sort(Body, BodyTT),
     ord_union(HeadTT, BodyTT, Lpp),
     cartesian_dif(VFSTail, Lpp),
-    %========================
-    % blocks_limit(B),
-    % oi(Glb, B),
-    %========================
     discountfactor(Discount),
     NewVFValue is Prob * VFValue * Discount.
 
