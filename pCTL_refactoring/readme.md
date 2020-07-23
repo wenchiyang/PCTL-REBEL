@@ -39,7 +39,7 @@ Here's a cheetsheet for specifying Phi in the prolog language. For more details,
 
 | pCTL formula                                       | Prolog representation                                        |
 | -------------------------------------------------- | ------------------------------------------------------------ |
-| $\mathtt{\{on(a, b)\}}$                            | $\mathtt{states([[on(a,b)]])}$                               |
+| ![equation] (http://www.sciweavers.org/tex2img.php?eq=%5Cmathtt%7B%7Bon%28a%2C%20b%29%7D%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)                            | $\mathtt{states([[on(a,b)]])}$                               |
 | $\mathtt{\{cl(a), on(a, b)\} \vee \{cl(c)\}}$      | $\mathtt{states([[cl(a), on(a,b)], [cl(c)]])}$               |
 | $\mathtt{P_{\bowtie p} [\phi_1 U^{\leq n}\phi_2]}$ | $\mathtt{until(Output, n, \phi_1, \phi_2, \bowtie, p)}$  // for unbounded $\mathtt{U}$, just set a large $\mathtt{n}$ |
 | $\mathtt{P_{\bowtie p} [X\; \phi]}$                | $\mathtt{next(Output, \phi, \bowtie, p)}$                    |
