@@ -9,7 +9,7 @@
 
 ### Installation
 
-```shell
+```console
 $ git clone https://github.com/wenchiyang/pCTL-REBEL
 $ cd pCTL-REBEL
 ```
@@ -20,7 +20,7 @@ This implementation is based on SWI-Prolog. All *.pl files are prolog files. The
 
 ### Run a customized property
 
-```shell
+```console
 $ cd pCTL_refactoring/blocksworld
 ```
 
@@ -57,13 +57,13 @@ tasks = [
 
 To run pCTL-REBEL on the specified task lists in the blocks world domain, do:
 
-```shell
+```console
 $ python run.py
 ```
 
 Then you can find the output files here:
 
-```shell
+```console
 $ cd experiment
 $ ls
 name_of_task.jpg          name_of_task.txt
@@ -73,7 +73,7 @@ name_of_task.jpg          name_of_task.txt
 
 To do this, create a domain folder and add the the five required files:
 
-```shell
+```console
 $ mkdir newdomain
 $ cd newdomain
 $ touch setting.pl sorting.pl precond.pl properties.pl run.py
