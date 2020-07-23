@@ -248,17 +248,16 @@ wp2(VFs, Phi1s, PQ) :-
 % and a value function "VFValue <----- VFState"
 %%%%% Step 1 : get weakest precondition
 wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
-    % get a subH
-    subsetgen(Head, SubH),
-    % create all possible \theta
-    structsubset(SubH, VFState, SubHp),
-    % create VFSTail using \theta
-    sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
-    ord_subtract(VFStateTT, SubHpTT, VFSTail),
-    headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-             partialQ(Q,A,S)),
-    oi_qrule(partialQ(Q,A,S)).
-    % writeln(partialQ(Q,A,S)).
+     % get a subH
+     subsetgen(Head, SubH),
+     % create all possible \theta
+     structsubset(SubH, VFState, SubHp),
+     % create VFSTail using \theta
+     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
+     ord_subtract(VFStateTT, SubHpTT, VFSTail),
+     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
+              partialQ(Q,A,S)),
+     oi_qrule(partialQ(Q,A,S)).
 
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
@@ -285,6 +284,7 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     (
     Goal,
     arg(1, State, S0),
+    % writeln(X),
     addQ(S0, X, S),
     sortByQValue(S, SortedS), % OPTIMIZE
     nb_setarg(1, State, SortedS),

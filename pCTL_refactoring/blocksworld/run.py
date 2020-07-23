@@ -9,7 +9,7 @@ s = subprocess.Popen(['mkdir', expFolder])
 s.communicate()
 
 
-l = [
+tasks = [
     ["exp1", ['swipl','-g','experiment1','-g','halt','properties.pl']]
     # ["exp2", ['swipl','-g','experiment2','-g','halt','properties.pl']]
     # ["experimentX_iter_1", ['swipl','-g','experimentX_iter_1','-g','halt','properties.pl']],
@@ -18,7 +18,7 @@ l = [
 ]
 
 
-for exp in l:
+for exp in tasks:
     name = exp[0]
     expargs = exp[1]
     outputfilename = expFolder+name+".txt"

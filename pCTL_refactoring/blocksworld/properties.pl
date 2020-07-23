@@ -4,7 +4,7 @@
 
 experiment1:-
     statistics(runtime, [Start|_]),
-    Phi = until(_, 3, states([[]]), states([[on(a,b)]]), >=, 0.6),
+    Phi = until(_, 1, states([[]]), states([[on(a,b)]]), >=, 0.6),
     evaluate(Phi), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,R|_],

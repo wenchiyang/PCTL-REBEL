@@ -138,8 +138,7 @@ oi_qrule(partialQ(_,_,_)):-
 
 oi_qrule(partialQ(_,_,S)):-
     termsInState(S, Terms),
-    list_to_set(Terms, TermSet),
-    length(TermSet, LargestObjectNum),
+    length(Terms, LargestObjectNum),
     blocks_limit(ObjectBound),
-    generateBoundedStates(S, TermSet, LargestObjectNum, ObjectBound).
+    generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
