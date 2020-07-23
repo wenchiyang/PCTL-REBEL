@@ -11,4 +11,13 @@ q(R,A,S,S') is the q-function where
 - S is current state
 - S' is the next state
 
+## Notes for developers
+### Differences between SARSgenerator and pCTL_refactoring
+
+- SARSgenerator abuses the partialQ/2 notation and extends it to partialQ/4
+- OI states are forced to be used, regardless to the block number upper bound (i.e. **blocks_limit/1**). This can be turned off by setting **oi_option(flexible)**, which gives the same oi effect as pCTL_refactoring
+
+
+
+
 ###
