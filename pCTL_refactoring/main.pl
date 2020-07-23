@@ -232,6 +232,7 @@ getPartialQwp2(VFs, Phi1s, SPQs2):-
 %     wpi([cl(X), cl(Z), on(X,Y)], 1.0, move(X,Y,Z), [cl(X), cl(Y), on(X,Z)],
 %         Phi1s, VFValue, VFState, PQ).
 
+% TODO merge wp1 and wp2
 wp1(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
     % VFValue > 0,
