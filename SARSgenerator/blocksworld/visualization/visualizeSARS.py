@@ -271,7 +271,7 @@ class SARS:
 
         surface.write_to_png(filename)
 
-    def save_to_file(self, filename):
+    def save_to_file(self, imgfolder, filename):
         self.drawaction(imgfolder+"arrow.png")
         self.s.save_to_file(imgfolder+"s.png")
         self.ss.save_to_file(imgfolder+"ss.png")
@@ -387,7 +387,7 @@ def main(valuefunction, imgfolder, imgfile):
             counter += 1
             sars_list = parseSARS(line)
             sars = SARS(sars_list)
-            sars.save_to_file(imgfolder+"vf"+str(counter)+".png")
+            sars.save_to_file(imgfolder, imgfolder+"vf"+str(counter)+".png")
             vfimgs.append(cv2.imread(imgfolder+"vf"+str(counter)+".png"))
     imgs_resize = vconcat_resize_max(vfimgs)
     cv2.imwrite(imgfile, imgs_resize)
@@ -450,7 +450,7 @@ if __name__ == '__main__':
         last_vf = getlastvaluefunctionSARS(content)
         # print(last_vf)
         imgfolder = "tempfigures/"
-        valuefunctionfile = "abstractsars.png" # without file extension
+        valuefunctionfile = "../experiments/abstractsars.png" # without file extension
         main(last_vf, imgfolder, valuefunctionfile)
 
     # main(abstractSARS, "tempfigures/", "SARS.png")

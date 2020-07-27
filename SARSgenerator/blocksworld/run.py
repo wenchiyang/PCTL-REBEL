@@ -30,6 +30,6 @@ for exp in tasks:
         content = f.read()
         last_vf = visualizeSARS.getlastvaluefunctionSARS(content)
         # print(last_vf)
-        imgfolder = "tempfigures/"
-        valuefunctionfile = name+".png" # without file extension
-        main(last_vf, imgfolder, valuefunctionfile)
+        imgfolder = "visualization/tempfigures/"
+        valuefunctionfile = expFolder+name+".png" # without file extension
+        visualizeSARS.main(last_vf, imgfolder, valuefunctionfile)
