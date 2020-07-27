@@ -217,10 +217,10 @@ class SARS:
 
     def __repr__(self):
         return \
-        "Precondition:\t" + str(self.s) + "\n" + \
+        "Precondition:\n\t" + str(self.s) + "\n" + \
         "Action:\t" + str(self.a) + "\n" + \
         "Reward:\t" + str(self.r) + "\n" + \
-        "Postcondition:\t" + str(self.ss) + "\n"
+        "Postcondition:\n\t" + str(self.ss) + "\n"
 
     def drawaction(self,filename):
         NUM_STACKS = 3

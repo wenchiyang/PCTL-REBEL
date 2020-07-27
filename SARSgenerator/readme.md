@@ -18,7 +18,7 @@ $ python run.py
 
 the abstract value function in the SARS form is in
 - experiments/[tastname].txt (text format)
-- visualization/[tastname].png (graphical format)
+- experiments/[tastname].png (graphical format)
 
 ## Notes for developers
 ### Differences between SARSgenerator and pCTL_refactoring
