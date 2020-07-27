@@ -273,7 +273,7 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
     NewVFValue is Prob * VFValue * Discount.
 
 
-%%
+%% TODO use maplist for this
 qTransfer([],[]):- !.
 qTransfer([q(Q,_,S)|Qs],[v(Q,S)|Vs]):-
     qTransfer(Qs, Vs), !.

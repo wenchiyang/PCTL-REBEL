@@ -313,6 +313,26 @@ message_hook(vf(CurrentVs), informational, _):-
     write("Number of abstract states: "), writeln(LCurrentVs),
     writeln("########").
 
+qtov(q(Q,A,S,SS), vf_SARS(s_(S),a_(A),r_(Q),ss_(SS))).
+
+message_hook(vfWithAction(QRules), informational, _):-
+    nl,
+    writeln("## value function with action ##"),
+    maplist(qtov, QRules, VRulesAct),
+    printall(VRulesAct),
+    length(VRulesAct, LVRulesAct),
+    write("Number of abstract states: "), writeln(LVRulesAct),
+    writeln("########").
+
+
+% message_hook(unfilteredQRules(QRules), informational, _):-
+%     nl,
+%     writeln("## SARS candidates ##"),
+%     printall(QRules),
+%     length(QRules, LQRules),
+%     write("Number of SARS candidates: "), writeln(LQRules),
+%     writeln("########").
+
 
 message_hook(partialQs(SPQs1, SPQs2), informational, _):-
     length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),

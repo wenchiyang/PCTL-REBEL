@@ -1,4 +1,4 @@
-from visualization import visualizeBlocksworld
+from visualization import visualizeSARS
 import subprocess
 
 expFolder = 'experiments/'
@@ -28,7 +28,8 @@ for exp in tasks:
     # read outputfile
     with open(outputfilename, 'r') as f:
         content = f.read()
-        last_vf = visualizeBlocksworld.getlastvaluefunction(content)
-        imgfolder = "visualization/tempfigures/"
-        imgfile = expFolder+name+".jpg"
-        visualizeBlocksworld.main(last_vf, imgfolder, imgfile)
+        last_vf = visualizeSARS.getlastvaluefunctionSARS(content)
+        # print(last_vf)
+        imgfolder = "tempfigures/"
+        valuefunctionfile = name+".png" # without file extension
+        main(last_vf, imgfolder, valuefunctionfile)

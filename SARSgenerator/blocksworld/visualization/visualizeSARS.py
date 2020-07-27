@@ -34,7 +34,7 @@ class On:
         return "on(" + str(self.topblock) + "," + str(self.downblock) +")"
 
 
-class BlocksWorld:
+class State:
     def __init__(self, q, move, blocks, cls, ons):
         self.q = q
         self.move = move
@@ -107,7 +107,7 @@ class BlocksWorld:
             ons.remove(found_on)
         return ons, found_on
 
-    def save_to_file(self):
+    def save_to_file(self, filename):
         NUM_STACKS = len(self.stacks)
         HIGHEST_STACK_NUM = len(self.stacks[0])
         BLOCK_WIDTH = 50
@@ -126,10 +126,10 @@ class BlocksWorld:
         # ctx.set_source_rgba(0, 0, 0, 0)
         ctx.fill()
 
-        ctx.rectangle(0, 0, WIDTH, HEIGHT)
+        # ctx.rectangle(0, 0, WIDTH, HEIGHT)
         ctx.set_source_rgb(0, 0, 0)
         ctx.set_line_width(4)
-        ctx.stroke()
+        # ctx.stroke()
         ##### draw frame #####
 
 
@@ -184,22 +184,148 @@ class BlocksWorld:
                         ctx.set_font_size(10)
                     else:
                         ctx.show_text(block.downblock)
-
                 ctx.stroke()
+        # print(str(filename))
+        surface.write_to_png(filename)
+
+
         ##### draw value #####
-        text_q = "q = " + self.q
+        # text_q = "q = " + self.q
+        #
+        # xbearing, ybearing, width, height, dx, dy = ctx.text_extents(text_q)
+        # ctx.move_to(WIDTH - width - 10, IN_STACK_SPACING)
+        # ctx.show_text(text_q)
+        #
+        # text_move = str(self.move)
+        # xbearing, ybearing, width, height, dx, dy = ctx.text_extents(text_move)
+        # ctx.move_to(WIDTH - width - 10, IN_STACK_SPACING + 10)
+        # ctx.show_text(text_move)
 
-        xbearing, ybearing, width, height, dx, dy = ctx.text_extents(text_q)
-        ctx.move_to(WIDTH - width - 10, IN_STACK_SPACING)
-        ctx.show_text(text_q)
 
-        text_move = str(self.move)
-        xbearing, ybearing, width, height, dx, dy = ctx.text_extents(text_move)
-        ctx.move_to(WIDTH - width - 10, IN_STACK_SPACING + 10)
-        ctx.show_text(text_move)
+        # return surface
 
 
-        return surface
+
+
+class SARS:
+    def __init__(self, sarsTuple):
+        self.s = sarsTuple[0]
+        self.a = sarsTuple[1]
+        self.r = sarsTuple[2]
+        self.ss = sarsTuple[3]
+
+
+    def __repr__(self):
+        return \
+        "Precondition:\t" + str(self.s) + "\n" + \
+        "Action:\t" + str(self.a) + "\n" + \
+        "Reward:\t" + str(self.r) + "\n" + \
+        "Postcondition:\t" + str(self.ss) + "\n"
+
+    def drawaction(self,filename):
+        NUM_STACKS = 3
+        HIGHEST_STACK_NUM = max(len(self.s.stacks[0]), len(self.ss.stacks[0]))
+        BLOCK_WIDTH = 50
+        IN_STACK_SPACING = 10
+        TOP_SPACING = IN_STACK_SPACING * 5
+        WIDTH = BLOCK_WIDTH * NUM_STACKS + IN_STACK_SPACING * (NUM_STACKS + 1)
+        HEIGHT = BLOCK_WIDTH * HIGHEST_STACK_NUM + TOP_SPACING
+        surface = cairo.ImageSurface(cairo.FORMAT_RGB24, WIDTH, HEIGHT)
+        ctx = cairo.Context(surface)
+
+        ##### draw background #####
+        ctx.rectangle(0, 0, WIDTH, HEIGHT)
+        # white background
+        ctx.set_source_rgb(1, 1, 1)
+        # # transparent black ??
+        # ctx.set_source_rgba(0, 0, 0, 0)
+        ctx.fill()
+
+        # ctx.rectangle(0, 0, WIDTH, HEIGHT)
+        ctx.set_source_rgb(0, 0, 0)
+        ctx.set_line_width(4)
+        # ctx.stroke()
+
+        # draw an arrow
+        arrow_length = WIDTH
+        arrow_angle = 0.0
+        arrowhead_angle = math.pi/6
+        arrowhead_length = WIDTH/8
+
+        ctx.move_to(0, HEIGHT/2) # move to center of canvas
+
+        ctx.rel_line_to(arrow_length * math.cos(arrow_angle), arrow_length * math.sin(arrow_angle))
+        ctx.rel_move_to(-arrowhead_length * math.cos(arrow_angle - arrowhead_angle), -arrowhead_length * math.sin(arrow_angle - arrowhead_angle))
+        ctx.rel_line_to(arrowhead_length * math.cos(arrow_angle - arrowhead_angle), arrowhead_length * math.sin(arrow_angle - arrowhead_angle))
+        ctx.rel_line_to(-arrowhead_length * math.cos(arrow_angle + arrowhead_angle), -arrowhead_length * math.sin(arrow_angle + arrowhead_angle))
+
+        ctx.set_source_rgb(0,0,0)
+        ctx.set_line_width(4)
+        ctx.stroke()
+
+        # draw action and reward
+        text_a = str(self.r) + " : " + str(self.a)
+        xbearing, ybearing, width, height, dx, dy = ctx.text_extents(text_a)
+        ctx.move_to((WIDTH - width)/2, HEIGHT/2 - 10)
+        ctx.show_text(text_a)
+
+        surface.write_to_png(filename)
+
+    def save_to_file(self, filename):
+        self.drawaction(imgfolder+"arrow.png")
+        self.s.save_to_file(imgfolder+"s.png")
+        self.ss.save_to_file(imgfolder+"ss.png")
+
+        imgs = [cv2.imread(imgfolder+"s.png"),
+                cv2.imread(imgfolder+"arrow.png"),
+                cv2.imread(imgfolder+"ss.png")]
+        imgs_resize = hconcat_resize_max(imgs)
+        cv2.imwrite(filename, imgs_resize)
+
+
+
+def parseSARS(rule):
+    """ Rule is a string of some form of [_a-zA-Z]+(S, A, R, S').
+    This function parses the given rule and returns [S, A, R, S']
+    of the type [State, str, str, State]
+    """
+    pattern_r = re.compile("s_\((\[[_,()0-9a-zA-Z]+\])\),a_\(([_,()0-9a-zA-Z]+)\),r_+\(([0-9.]+)\),ss_\((\[[_,()0-9a-zA-Z]+\])\)")
+    s, a, r, ss = re.findall(pattern_r, rule)[0]
+
+    # Parses a state string to cl/1 and on/2 objects,
+    pattern_cl = re.compile("cl\(([_a-zA-Z0-9]+)\)")
+    pattern_on = re.compile("on\(([_a-zA-Z0-9]+),([_a-zA-Z0-9]+)\)")
+
+    cl_blocks_s = re.findall(pattern_cl, s)
+    ons = re.findall(pattern_on, s)
+    on_blocks_s = [blo for onblocks in ons for blo in onblocks]
+    blocks_s = set(cl_blocks_s + on_blocks_s)
+
+    # create objects...
+    block_objs_s = [Block(b) for b in blocks_s]
+    cl_objs_s = [Cl(b) for b in cl_blocks_s]
+    on_objs_s = [On(top,down) for (top,down) in ons]
+
+    # create a state object
+    state_s = State(0.0, a, block_objs_s, cl_objs_s, on_objs_s)
+
+
+    cl_blocks_ss = re.findall(pattern_cl, ss)
+    ons = re.findall(pattern_on, ss)
+    on_blocks_ss = [blo for onblocks in ons for blo in onblocks]
+    blocks_ss = set(cl_blocks_ss + on_blocks_ss)
+
+    block_objs_ss = [Block(b) for b in blocks_ss]
+    cl_objs_ss = [Cl(b) for b in cl_blocks_ss]
+    on_objs_ss = [On(top,down) for (top,down) in ons]
+    state_ss = State(0.0, a, block_objs_ss, cl_objs_ss, on_objs_ss)
+
+    # pattern_move = re.compile("(move\([_a-zA-Z0-9]+,[_a-zA-Z0-9]+),")
+    # movetemp = re.findall(pattern_move, state)
+    # move = movetemp[0]+")" if movetemp else ""
+
+    return [state_s, a, r, state_ss]
+
 
 
 def parse(state):
@@ -224,9 +350,11 @@ def parse(state):
     cl_objs = [Cl(b) for b in cl_blocks]
     on_objs = [On(top,down) for (top,down) in ons]
 
-    blocksworld = BlocksWorld(q, move, block_objs, cl_objs, on_objs)
+    blocksworld = State(q, move, block_objs, cl_objs, on_objs)
 
     return blocksworld
+
+
 
 def hconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
     h_max = max(im.shape[0] for im in im_list)
@@ -241,6 +369,7 @@ def vconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
     return cv2.vconcat(im_list_resize)
 
 
+
 def main(valuefunction, imgfolder, imgfile):
     # state1 = "v(0.972,[cl(a),cl(_135230),cl(b),on(a,a),on(a,_135294),on(_135230,_135326)])"
     # blocksworld1 = parse(state1)
@@ -252,22 +381,17 @@ def main(valuefunction, imgfolder, imgfile):
 
     # lines = valuefunction.split("\n")
     counter = 0
-    imgs = []
+    vfimgs = []
     for line in valuefunction:
         if line:
-            filename = imgfolder+"img"+str(counter)+".png"
             counter += 1
-            blocksworld = parse(line)
-            surface = blocksworld.save_to_file()
-            surface.write_to_png(filename)
-            imgs.append(cv2.imread(filename))
+            sars_list = parseSARS(line)
+            sars = SARS(sars_list)
+            sars.save_to_file(imgfolder+"vf"+str(counter)+".png")
+            vfimgs.append(cv2.imread(imgfolder+"vf"+str(counter)+".png"))
+    imgs_resize = vconcat_resize_max(vfimgs)
+    cv2.imwrite(imgfile, imgs_resize)
 
-    im_h_resize = hconcat_resize_max(imgs)
-    cv2.imwrite(imgfile, im_h_resize)
-    # cv2.imwrite('opencv_hconcat2.jpg', im_h_resize)
-    # im_v_resize = vconcat_resize_max(imgs)
-    # cv2.imwrite('opencv_vconcat.jpg', im_v_resize)
-    # cv2.imwrite('opencv_vconcat2.jpg', im_v_resize)
 
 
 def drawseq():
@@ -297,20 +421,39 @@ def getlastvaluefunction(content):
     # remove irrelevant lines
     lastvf = lastvf.split("\n")[1:-2]
     return lastvf
-    # return vf[-1]
 
-# valuefunction = \
-# """
-# v(1.0,[on(a,b)])
-# v(0.99,[cl(a),cl(b),on(c,d),on(a,_244206)])
-# v(0.81,[cl(b),cl(_244644),on(b,a),on(c,d),on(a,_245072)])
-# v(0.81,[cl(a),cl(_245290),cl(_245398),on(c,d),on(a,_246116),on(_245290,b)])
-# v(0.81,[cl(b),cl(_246346),cl(_246454),on(c,d),on(a,_247172),on(_246346,a)])
-# v(0.0,[cl(_247402),cl(_247598),on(c,d),on(_247402,_247466)])
-# """
+def getlastvaluefunctionSARS(content):
+    content = content.replace("\n", "|")
+    pattern_vf = re.compile(r'## value function with action ##([^#]*)########')
+    # capture the last value function
+    lastvf = re.findall(pattern_vf, content)[-1].replace("|","\n")
+    # remove irrelevant lines
+    lastvf = lastvf.split("\n")[1:-2]
+    return lastvf
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    # abstractSARS = \
+    # """
+    # ## value function with action ##
+    # vf_SARS([on(a,b)],_72784,1.0,[on(a,b)])
+    # vf_SARS([cl(a),cl(b),on(a,_72828)],move(a,b,_72828),0.99,[cl(a),cl(b),on(a,_72828)])
+    # vf_SARS([cl(b),cl(_73288),on(b,a),on(a,_73484)],move(b,_73288,a),0.81,[cl(a),cl(b),on(a,_73484)])
+    # vf_SARS([cl(a),cl(_74012),cl(_74120),on(a,_74316),on(_74012,b)],move(_74012,_74120,b),0.81,[cl(a),cl(b),on(a,_74316)])
+    # vf_SARS([cl(b),cl(_75134),cl(_75242),on(a,_75438),on(_75134,a)],move(_75134,_75242,a),0.81,[cl(a),cl(b),on(a,_75438)])
+    # vf_SARS([cl(_76256),cl(_76384),on(_76256,_76320)],move(_76256,_76384,_76320),0.0,[cl(_76256),cl(_76384),on(_76256,_76320)])
+    # Number of abstract states: 6
+    # ########
+    # """
+    with open("../experiments/exp1.txt", 'r') as f:
+        content = f.read()
+        last_vf = getlastvaluefunctionSARS(content)
+        # print(last_vf)
+        imgfolder = "tempfigures/"
+        valuefunctionfile = "abstractsars.png" # without file extension
+        main(last_vf, imgfolder, valuefunctionfile)
+
+    # main(abstractSARS, "tempfigures/", "SARS.png")
 
     # # Get full command-line arguments
     # full_cmd_arguments = sys.argv

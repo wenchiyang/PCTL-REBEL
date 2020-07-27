@@ -82,7 +82,7 @@ getVFStates(VFs, States):-
 
 %%
 constructAbsorbingVFs(S, v(1.0, S)).
-constructAbsorbingQs(S, q(1.0, _, S)).
+constructAbsorbingQs(S, q(1.0, _, S, S)).
 
 % andstate/2:
 % get "E1 and E2"

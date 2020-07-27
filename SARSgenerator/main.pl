@@ -160,10 +160,13 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         print_message(informational, partialQtime(Start1, Stop1)),
         %write("    step 1 : "), write(Step1), writeln(" s"),
     %%% step 2: combining, producing Q rules
+        nl,
+        % writeln("## SARS candidates ##"),
         statistics(runtime, [Start2|_]),
     findall_Qrules(Q, Phi2sQs, getQ(SPQs1, SPQs2, Q), QRules), !,
     %findall(Q, getQ(SPQs1, SPQs2, Q), QRules), !,
         statistics(runtime, [Stop2|_]),
+        % writeln("########"),
         %write("    step 2 : "), write(Step2), writeln(" s"),
         %statistics(global_stack, [Used4,_]),
         %write("stack after combining partialQs : "),
@@ -172,7 +175,8 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %garbage_collect,
     %%% step 3: filtering, producing value functions
         %statistics(runtime, [Start3|_]),
-    % printall(QRules), nl, nl,
+    % print_message(informational, unfilteredQRules(UnfilteredQRules)),
+    print_message(informational, vfWithAction(QRules)),
     qTransfer(QRules, NewVFs),
     !.
 
@@ -180,7 +184,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
 
 % use backtracking to generate all Q rules from all possible
 % combinations from partialQ1s and PartialQ2s
-getQ(SPQs1, SPQs2, Qrule):-
+getQ(SPQs1, SPQs2, QruleExtra):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
@@ -188,10 +192,8 @@ getQ(SPQs1, SPQs2, Qrule):-
     PartialQ2 = partialQ(_,A2,_,_),
     % Q1 > 0,
     A1=A2,
-    partialQstoQ(PartialQ1, PartialQ2, QruleExtra),
-    QruleExtra = q(Q, A, S, _),
-    Qrule = q(Q, A, S),
-    writeln(QruleExtra).
+    partialQstoQ(PartialQ1, PartialQ2, QruleExtra).
+    % writeln(QruleExtra).
     % oi_qrule(Qrule).
 
 
@@ -279,13 +281,14 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
 
 %%
 qTransfer([],[]):- !.
-qTransfer([q(Q,_,S)|Qs],[v(Q,S)|Vs]):-
+qTransfer([q(Q,_,S,_)|Qs],[v(Q,S)|Vs]):-
     qTransfer(Qs, Vs), !.
 
 
 %%
 findall_Qrules(X, InitQs, Goal, Results) :-
     State = state(InitQs),
+    % AllSARStuplesState = sars([]),
     (
     Goal,
     arg(1, State, S0),
@@ -293,9 +296,15 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     addQ(S0, X, S),
     sortByQValue(S, SortedS), % OPTIMIZE
     nb_setarg(1, State, SortedS),
+    % %%%%% THIS FAILS because addQ fails earlier when filtering qrules
+    % arg(1, AllSARStuplesState, AllSARStuples),
+    % NewAllSARStuples = [X|AllSARStuples],
+    % nb_setarg(1, AllSARStuplesState, NewAllSARStuples),
+    % %%%%%
     fail
     ;
     arg(1, State, Results)
+    % arg(1, AllSARStuplesState, UnfilteredQRules)
     ).
 
 
@@ -304,16 +313,16 @@ findall_Qrules(X, InitQs, Goal, Results) :-
 addQ([], New_QRule, [New_QRule]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addQ([q(Q1,A1,S1)|T0], q(Q,_,S), [q(Q1,A1,S1)|T0]) :-
+addQ([q(Q1,A1,S1,SS1)|T0], q(Q,_,S,_), [q(Q1,A1,SS1)|T0]) :-
     Q1 >= Q,
     thetasubsumes(S1,S), !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
 % and add New_QRule
-addQ([q(Q1,_,S1)|T0], q(Q,A,S), T) :-
+addQ([q(Q1,_,S1,_)|T0], q(Q,A,S,SS), T) :-
     Q1 =< Q,
     thetasubsumes(S, S1), !,
-    addQ(T0, q(Q,A,S), T), !.
+    addQ(T0, q(Q,A,S,SS), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1

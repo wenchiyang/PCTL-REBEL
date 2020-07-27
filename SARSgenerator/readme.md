@@ -11,6 +11,15 @@ q(R,A,S,S') is the q-function where
 - S is current state
 - S' is the next state
 
+After running,
+```console
+$ python run.py
+```
+
+the abstract value function in the SARS form is in
+- experiments/[tastname].txt (text format)
+- visualization/[tastname].png (graphical format)
+
 ## Notes for developers
 ### Differences between SARSgenerator and pCTL_refactoring
 
