@@ -109,7 +109,10 @@ class State:
 
     def save_to_file(self, filename):
         NUM_STACKS = len(self.stacks)
-        HIGHEST_STACK_NUM = len(self.stacks[0])
+        try:
+            HIGHEST_STACK_NUM = len(self.stacks[0])
+        except:
+            HIGHEST_STACK_NUM = 1
         BLOCK_WIDTH = 50
         IN_STACK_SPACING = 10
         TOP_SPACING = IN_STACK_SPACING * 5
@@ -224,7 +227,10 @@ class SARS:
 
     def drawaction(self,filename):
         NUM_STACKS = 3
-        HIGHEST_STACK_NUM = max(len(self.s.stacks[0]), len(self.ss.stacks[0]))
+        try:
+            HIGHEST_STACK_NUM = max(len(self.s.stacks[0]), len(self.ss.stacks[0]))
+        except:
+            HIGHEST_STACK_NUM = 1
         BLOCK_WIDTH = 50
         IN_STACK_SPACING = 10
         TOP_SPACING = IN_STACK_SPACING * 5
@@ -289,7 +295,7 @@ def parseSARS(rule):
     This function parses the given rule and returns [S, A, R, S']
     of the type [State, str, str, State]
     """
-    pattern_r = re.compile("s_\((\[[_,()0-9a-zA-Z]+\])\),a_\(([_,()0-9a-zA-Z]+)\),r_+\(([0-9.]+)\),ss_\((\[[_,()0-9a-zA-Z]+\])\)")
+    pattern_r = re.compile("s_\((\[[_,()0-9a-zA-Z]*\])\),a_\(([_,()0-9a-zA-Z]+)\),r_\(([0-9.]+)\),ss_\((\[[_,()0-9a-zA-Z]*\])\)")
     s, a, r, ss = re.findall(pattern_r, rule)[0]
 
     # Parses a state string to cl/1 and on/2 objects,

@@ -5,8 +5,8 @@ import subprocess
 def run():
     expFolder = 'experiments/'
 
-    s = subprocess.Popen(['rm', '-r', expFolder])
-    s.communicate()
+    # s = subprocess.Popen(['rm', '-r', expFolder])
+    # s.communicate()
     s = subprocess.Popen(['mkdir', expFolder])
     s.communicate()
 
