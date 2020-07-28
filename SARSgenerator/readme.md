@@ -10,3 +10,8 @@ Specify in simulate.pl
 ```console
 $ python generateSARS.py
 ```
+
+
+TODO:
+still too abstract, needs a better way to remove the variables by binding.
+First check if the dif/2 are correctly working

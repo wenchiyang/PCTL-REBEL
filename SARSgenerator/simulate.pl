@@ -3,7 +3,7 @@
 :- use_module(sorting).
 
 domain([a, b, fl]).
-initialstate([cl(a), cl(b), cl(fl)]).
+initialstate([cl(a), cl(b), cl(fl), on(a,fl), on(b,fl)]).
 discountfactor(1). % used in the bellman update operator
 convergence_threshold(0.01). % residual for the VI algorithm to stop
 % oi_option(force).
@@ -31,23 +31,9 @@ state_reward(10, [on(a,b)]).
 mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
 
 %
-%%
-printall([]):- !.
-printall([E|R]):-
-    writeln(E),
-    printall(R),!.
 
-%
-qtov(sars(S,A,Q,SS), sars(s_(S),a_(A),r_(Q),ss_(SS))).
 
-message_hook(sars(QRules), informational, _):-
-    nl,
-    writeln("## value function with action ##"),
-    maplist(qtov, QRules, VRulesAct),
-    printall(VRulesAct),
-    length(VRulesAct, LVRulesAct),
-    write("Number of abstract states: "), writeln(LVRulesAct),
-    writeln("########").
+
 
 p :-
     initialstate(SS),
@@ -59,11 +45,12 @@ p :-
 % use backtracking to generate all SARS given S
 generateSARS(SS, sars(S, Act, R, SS)):-
     transition(A, Prob, R, Head, Body), % choose a transition
-    wpi(t(A, Prob, R, Head, Body), sars(S, Act, R, SS)),
-    termsInState(S, STerms),
-    generateOIstate(STerms, OISTerms),
-    term_variables(OISTerms, []),
-    legalstate(S).
+    wpi(t(A, Prob, R, Head, Body), sars(S, Act, R, SS)).
+
+    % termsInState(S, STerms),
+    % generateOIstate(STerms, OISTerms),
+    % term_variables(OISTerms, []),
+    % legalstate(S).
 
 
 wpi(t(Act, Prob, R, Head, Body), sars(S, Act, R, SS)):-
@@ -82,8 +69,25 @@ wpi(t(Act, Prob, R, Head, Body), sars(S, Act, R, SS)):-
 headbodyo(Head, SSTail, Prob, Act, Body, partialQ(Prob,Act,Glb)):-
     extract(SSTail), extract(Body),
     getstate(GlbTT),
-    % writeln(GlbTT).
     subsumesort(GlbTT, Glb),
     sort(Head, HeadTT), sort(Body, BodyTT),
     ord_union(HeadTT, BodyTT, Lpp),
     cartesian_dif(SSTail, Lpp).
+
+%%
+printall([]):- !.
+printall([E|R]):-
+    writeln(E),
+    printall(R),!.
+
+%
+qtov(sars(S,A,Q,SS), sars(s_(S),a_(A),r_(Q),ss_(SS))).
+
+message_hook(sars(QRules), informational, _):-
+    nl,
+    writeln("## value function with action ##"),
+    maplist(qtov, QRules, VRulesAct),
+    printall(VRulesAct),
+    length(VRulesAct, LVRulesAct),
+    write("Number of abstract states: "), writeln(LVRulesAct),
+    writeln("########").
