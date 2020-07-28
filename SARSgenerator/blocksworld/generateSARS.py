@@ -30,7 +30,8 @@ if __name__ == '__main__':
         last_vf = visualizeSARS.getlastvaluefunctionSARS(content)
 
         with open(ground_pl_file, 'w') as f:
-            f.write(":- use_module(\"../util\").\n\n")
+            f.write(":- use_module(\"../util\").\n")
+            f.write(":- use_module(precond).\n\n")
             for line in last_vf:
                 # f.write(line+".\n")
                 sars_list = visualizeSARS.parseSARS(line)
@@ -52,13 +53,15 @@ if __name__ == '__main__':
             f.write("domain("+domain_objs+").\n\n")
             f.write(
 """
-groundtask(S):-
-     domain(Blocks),
-     vf(S,A,R,SS),
-     termsInState(S, Terms),
-     append(Blocks,Terms, NewTerms),
-     generateOIstate(NewTerms, _).
-     % thetasubsumes(Block, S).
+% use backtrack to create all possible
+groundtask(vf(S,A,R,SS)):-
+     domain(Blocks), % get all ground domain elements
+     vf(S,A,R,SS), % get an abstract value function (as template)
+     termsInState(S, StateTerms), append(Blocks,StateTerms, DomainElements), % get all domain elements
+     generateOIstate(DomainElements, OIDomainElements),
+     term_variables(OIDomainElements, []), % All variables must be ground
+     legalstate(S). % precondition must be legal
+     % legalstate(SS),
 """
             )
 

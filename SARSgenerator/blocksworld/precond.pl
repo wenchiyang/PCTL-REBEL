@@ -21,7 +21,7 @@ on_itself        @ on(X, X) <=> fail.
 not_clear        @ on(_,B), cl(B) <=> fail.
 on_two_blocks    @ on(A,B)\ on(A,D) <=> B=D.
 under_two_blocks @ on(A,B)\ on(C,B) <=> A=C.
-%fl_on_top        @ on(fl,_) <=> fail.
+fl_on_top        @ on(fl,_) <=> fail.
 duplicate_clear  @ cl(X) \ cl(X) <=> true.
 
 collect, cl(X) <=> state([cl(X)]).
