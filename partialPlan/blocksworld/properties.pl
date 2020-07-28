@@ -315,6 +315,7 @@ message_hook(vf(CurrentVs), informational, _):-
 
 qtov(q(Q,A,S,SS), vf_SARS(s_(S),a_(A),r_(Q),ss_(SS))).
 qtov(partialQ(Q,A,S,SS), partialQ(s_(S),a_(A),r_(Q),ss_(SS))).
+
 message_hook(vfWithAction(QRules), informational, _):-
     nl,
     writeln("## value function with action ##"),

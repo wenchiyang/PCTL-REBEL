@@ -167,6 +167,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         % writeln("## SARS candidates ##"),
         statistics(runtime, [Start2|_]),
     findall_Qrules(Q, Phi2sQs, getQ(SPQs1, SPQs2, Q), QRules), !,
+    % printall(Phi2sQs),
     %findall(Q, getQ(SPQs1, SPQs2, Q), QRules), !,
         statistics(runtime, [Stop2|_]),
         % writeln("########"),
@@ -196,6 +197,8 @@ getQ(SPQs1, SPQs2, QruleExtra):-
     % Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, QruleExtra).
+    % QruleExtra =.. F, length(F, LF),
+    % writeln(LF).
     % writeln(PartialQ1), writeln(PartialQ2), nl.
 
 % postcond(Default, Alternative).
@@ -206,7 +209,7 @@ getQ(SPQs1, SPQs2, QruleExtra):-
 % postcond([],SS2,SS2) :- !.
 
 partialQstoQ(partialQ(Q1,A,S1,_), partialQ(Q2,A,S2,SS2),
-             q(Q, A, S2, SS2)):-
+             q(Q, A, S2, SS2) ):-
     legalstate(S2),
     thetasubsumes(S1, S2), !,
     Q is Q1 + Q2, !.
@@ -306,7 +309,7 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     (
     Goal,
     arg(1, State, S0),
-    % writeln(X),
+    % writeln(InitQs),
     addQ(S0, X, S),
     sortByQValue(S, SortedS), % OPTIMIZE
     nb_setarg(1, State, SortedS),
@@ -318,7 +321,6 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     fail
     ;
     arg(1, State, Results)
-    % arg(1, AllSARStuplesState, UnfilteredQRules)
     ).
 
 
@@ -327,7 +329,7 @@ findall_Qrules(X, InitQs, Goal, Results) :-
 addQ([], New_QRule, [New_QRule]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addQ([q(Q1,A1,S1,SS1)|T0], q(Q,_,S,_), [q(Q1,A1,SS1)|T0]) :-
+addQ([q(Q1,A1,S1,SS1)|T0], q(Q,_,S,_), [q(Q1,A1,S1,SS1)|T0]) :-
     Q1 >= Q,
     thetasubsumes(S1,S), !.
 

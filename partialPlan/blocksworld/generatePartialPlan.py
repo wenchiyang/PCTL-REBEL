@@ -9,7 +9,7 @@ def ground(ground_pl_file, expFolder):
     name = task[0]
     taskargs = task[1]
     outputfilename = expFolder+name+".txt"
-    print(outputfilename)
+    # print(outputfilename)
     with open(outputfilename, 'w') as f:
         process = subprocess.Popen(taskargs, stdout=f)
         process.communicate()
@@ -52,7 +52,7 @@ printall([]):- !.
 printall([E|R]):-
     writeln(E),
     printall(R),!.
-    
+
 groundtask:-
     findall(GVF, groundvf(GVF), GVFs),
     printall(GVFs).
