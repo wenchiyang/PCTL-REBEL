@@ -3,7 +3,7 @@
 :- use_module(sorting).
 
 domain([a, b, fl]).
-initialstate([cl(a), cl(b), cl(fl), on(a,fl), on(b,fl)]).
+initialstates([[cl(a), cl(b)], [on(a,b)], [on(b,a)]]).
 discountfactor(1). % used in the bellman update operator
 convergence_threshold(0.01). % residual for the VI algorithm to stop
 % oi_option(force).
@@ -28,32 +28,42 @@ transition(move(X,Y,Z), 0.1, -1,
 % a special form of the reward function
 state_reward(10, [on(a,b)]).
 
-mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
-
 %
 
 
-
-
 p :-
-    initialstate(SS),
     % domain(R),
-    findall(SARS, generateSARS(SS, SARS), SARSs),
+    findall(SARS, generateSARS(SARS), SARSs),
     print_message(informational, sars(SARSs))
     .
 
+mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
+
 % use backtracking to generate all SARS given S
-generateSARS(SS, sars(S, Act, R, SS)):-
+generateSARS(SARS):-
+    initialstates(SSs), member(SS, SSs),
     transition(A, Prob, R, Head, Body), % choose a transition
-    wpi(t(A, Prob, R, Head, Body), sars(S, Act, R, SS)).
+    regress(SS, t(A, Prob, R, Head, Body), SARS).
 
-    % termsInState(S, STerms),
-    % generateOIstate(STerms, OISTerms),
-    % term_variables(OISTerms, []),
-    % legalstate(S).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% oi(State)
+% This uses backtracking to generate all OI states (i.e. all variables are different)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+oi(S):-
+    termsInState(S, STerms),
+    % fl is a special constant
+    generateOIstate([fl|STerms], OISTerms),
+    term_variables(OISTerms, []),
+    legalstate(S).
 
 
-wpi(t(Act, Prob, R, Head, Body), sars(S, Act, R, SS)):-
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% regress(PostCond, Transition, SARSTuple)
+% This uses backtracking to regress all possible ground SARS tuples
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+regress(SS, t(Act, Prob, R, Head, Body), sars(S, Act, Prob, SS)):-
     % get a subH
     subsetgen(Head, SubH),
     % create all possible \theta
@@ -62,11 +72,10 @@ wpi(t(Act, Prob, R, Head, Body), sars(S, Act, R, SS)):-
     sort(SS, SSTT), sort(SubHp, SubHpTT),
     ord_subtract(SSTT, SubHpTT, SSTail),
     % writeln(h(SSTT, SubHpTT, SSTail)),nl,
-    headbodyo(Head, SSTail, Prob, Act, Body, partialQ(Prob,Act,S)).
-    % oi_option(OI_option),
-    % oi_qrule(partialQ(Prob,Act,SS), OI_option).
+    precond(Head, SSTail, Body, S),
+    oi(S).
 
-headbodyo(Head, SSTail, Prob, Act, Body, partialQ(Prob,Act,Glb)):-
+precond(Head, SSTail, Body, Glb):-
     extract(SSTail), extract(Body),
     getstate(GlbTT),
     subsumesort(GlbTT, Glb),
