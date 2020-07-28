@@ -48,9 +48,14 @@ groundvf(vf(S,A,R,SS)):-
     term_variables(OIDomainElements, []), % All variables must be ground
     legalstate(S). % precondition must be legal
 
+printall([]):- !.
+printall([E|R]):-
+    writeln(E),
+    printall(R),!.
+    
 groundtask:-
     findall(GVF, groundvf(GVF), GVFs),
-    writeln(GVFs).
+    printall(GVFs).
 """
         )
 

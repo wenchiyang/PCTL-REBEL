@@ -61,6 +61,8 @@ and(Res, [E1|States1], States2):-
 until(SortedStates, Steps, Phi1s, Phi2s, Op, Threshold) :-
     maplist(constructAbsorbingVFs,Phi2s,InitV), !,
     maplist(constructAbsorbingQs,Phi2s,Phi2sQs), !,
+    % writeln(InitV),
+    % writeln(Phi2sQs),
     vi(Steps, 1, InitV, _, Phi1s, Phi2sQs, FinalVs), !,
     % TODO combine filter and getVFStates to optimize
     filter(FinalVs, Op, Threshold, NewVN), !,
@@ -150,6 +152,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %write("stack before partialQ2 : "),
         %print_message(informational, stackusage(Used2)),
     % printall(SPQs1), nl,nl,
+    % print_message(informational, vfWithAction(SPQs1)),
     getPartialQwp2(VFs1, Phi1s, SPQs2), !,
         %statistics(global_stack, [Used3,_]),
         %write("stack before combining partialQs : "),
@@ -193,21 +196,28 @@ getQ(SPQs1, SPQs2, QruleExtra):-
     % Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, QruleExtra).
-    % writeln(QruleExtra).
-    % oi_qrule(Qrule).
+    % writeln(PartialQ1), writeln(PartialQ2), nl.
 
+% postcond(Default, Alternative).
+
+
+% postcond(SS1,_,SS1) :-
+%     SS1 \== [], !.
+% postcond([],SS2,SS2) :- !.
 
 partialQstoQ(partialQ(Q1,A,S1,_), partialQ(Q2,A,S2,SS2),
              q(Q, A, S2, SS2)):-
     legalstate(S2),
     thetasubsumes(S1, S2), !,
     Q is Q1 + Q2, !.
+    % postcond(SS2,SS1,SS), !.
 
 partialQstoQ(partialQ(Q1,A,S1,SS1), partialQ(Q2,A,S2,_),
-             q(Q, A, S1,SS1)):-
+             q(Q, A, S1, SS1)):-
     legalstate(S1),
     thetasubsumes(S2, S1), !,
     Q is Q1 + Q2, !.
+    % postcond(SS1,SS2,SS), !.
 
 % getPartialQwp1Det(VFs, Phi2sQs, Phi1s, SPQs1):-
 %     garbage_collect,
@@ -242,6 +252,10 @@ wp1(VFs, Phi1s, PQ) :-
     % VFValue > 0,
     transition(Action, 1, Prob, Head_i, Body),
     wpi(Head_i, Prob, Action, Body, Phi1s, VFValue, VFState, PQ).
+
+    % writeln(PQ),
+    % writeln(v(VFValue, VFState)), nl, nl.
+    % writeln().
 
 wp2(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
@@ -336,6 +350,7 @@ findall_partialQs(X, Goal, Results) :-
   State = state([]),
   (  Goal,
      arg(1, State, S0),
+     % write("New par: "), writeln(X),nl,
      addpartialQ(S0, X, S),
      sortByQValue(S, SortedS),
      nb_setarg(1, State, SortedS),

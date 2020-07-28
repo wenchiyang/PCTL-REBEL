@@ -4,7 +4,7 @@
 
 experiment1:-
     statistics(runtime, [Start|_]),
-    Phi = until(_, 1, states([[]]), states([[on(a,b)]]), >=, 0.6),
+    Phi = until(_, 2, states([[]]), states([[on(a,b)]]), >=, 0.6),
     evaluate(Phi), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,R|_],
@@ -314,7 +314,7 @@ message_hook(vf(CurrentVs), informational, _):-
     writeln("########").
 
 qtov(q(Q,A,S,SS), vf_SARS(s_(S),a_(A),r_(Q),ss_(SS))).
-
+qtov(partialQ(Q,A,S,SS), partialQ(s_(S),a_(A),r_(Q),ss_(SS))).
 message_hook(vfWithAction(QRules), informational, _):-
     nl,
     writeln("## value function with action ##"),
