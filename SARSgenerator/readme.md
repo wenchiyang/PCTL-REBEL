@@ -11,17 +11,18 @@ q(R,A,S,S') is the q-function where
 
 ## Simulate all SARS tuples in a RMDP
 
-TODO
-pecify the transition function and reward function in simulate.pl
+Specify the transition function and reward function in simulate.pl
 
-
+```console
+$ python generateSARS.py
+```
 
 
 ## Generating a partial plan from a value function
 
 By running
 ```console
-$ python generateSARS.py
+$ python generatePartialPlan.py
 ```
 
 the abstract value function in the SARS form is in
