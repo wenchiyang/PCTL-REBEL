@@ -5,13 +5,15 @@
 Specify in simulate.pl
 - the transition function
 - reward function
-- the domain
+- all states in the model
+- TODO: generate all states in the model from a given domain (e.g. {a, b, c, d, e})
 
 ```console
 $ python generateSARS.py
 ```
 
+the ground value function in the SARS form is in
+- experiments/simulate.txt (text format)
+- experiments/simulate.png (graphical format)
 
-TODO:
-still too abstract, needs a better way to remove the variables by binding.
-First check if the dif/2 are correctly working
+TODO: integrate rewards

@@ -2,8 +2,30 @@
 :- use_module(util).
 :- use_module(sorting).
 
-domain([a, b, fl]).
-initialstates([[cl(a), cl(b)], [on(a,b)], [on(b,a)]]).
+domain([a, b]).
+% Two states
+% initialstates([
+%     [cl(a), cl(b)],
+%     [cl(a), on(a,b)],
+%     [cl(b), on(b,a)]]).
+
+% Three states
+initialstates([
+    [cl(a), cl(b), cl(c)],
+    [cl(a), cl(c), on(a,b)],
+    [cl(b), cl(c), on(b,a)],
+    [cl(a), cl(b), on(a,c)],
+    [cl(b), cl(c), on(c,a)],
+    [cl(a), cl(b), on(b,c)],
+    [cl(a), cl(c), on(c,b)],
+    [cl(a), on(a,b), on(b,c)],
+    [cl(a), on(a,c), on(c,b)],
+    [cl(b), on(b,a), on(a,c)],
+    [cl(b), on(b,c), on(c,a)],
+    [cl(c), on(c,a), on(a,b)],
+    [cl(c), on(c,b), on(b,a)]
+    ]).
+
 discountfactor(1). % used in the bellman update operator
 convergence_threshold(0.01). % residual for the VI algorithm to stop
 % oi_option(force).
@@ -58,6 +80,8 @@ oi(S):-
 
 
 %
+% domain_states(States):-
+%     domain(Elements), .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % regress(PostCond, Transition, SARSTuple)

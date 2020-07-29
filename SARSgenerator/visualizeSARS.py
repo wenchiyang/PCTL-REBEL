@@ -462,5 +462,5 @@ if __name__ == '__main__':
     imgfolder = "tempfigures/"
 
 
-    valuefunctionfile = expFolder+"abstractsars.png" # without file extension
-    main(last_vf, imgfolder, valuefunctionfile)
+    sarsfile = expFolder+name+".png" # without file extension
+    main(last_vf, imgfolder, sarsfile)
