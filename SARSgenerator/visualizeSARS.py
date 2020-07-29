@@ -380,9 +380,9 @@ def vconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
 def main(valuefunction, imgfolder, imgfile):
 
 
-    # if path.exists(imgfolder):
-    #     shutil.rmtree(imgfolder)
-    # os.mkdir(imgfolder)
+    if path.exists(imgfolder):
+        shutil.rmtree(imgfolder)
+    os.mkdir(imgfolder)
 
     # lines = valuefunction.split("\n")
     counter = 0
@@ -440,10 +440,10 @@ def getlastvaluefunctionSARS(content):
 if __name__ == '__main__':
     expFolder = "experiments/"
 
-    # if path.exists(expFolder):
-    #     shutil.rmtree(expFolder)
+    if path.exists(expFolder):
+        shutil.rmtree(expFolder)
     # if not path.exists(expFolder):
-    # os.mkdir(expFolder)
+    os.mkdir(expFolder)
 
     task = ["simulate", ['swipl','-g','p','-g','halt','simulate.pl']]
     name = task[0]
