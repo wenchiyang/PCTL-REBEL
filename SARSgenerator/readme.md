@@ -15,5 +15,3 @@ $ python generateSARS.py
 the ground value function in the SARS form is in
 - experiments/simulate.txt (text format)
 - experiments/simulate.png (graphical format)
-
-TODO: integrate rewards

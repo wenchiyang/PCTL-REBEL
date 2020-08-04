@@ -4,27 +4,27 @@
 
 domain([a, b]).
 % Two states
-% initialstates([
-%     [cl(a), cl(b)],
-%     [cl(a), on(a,b)],
-%     [cl(b), on(b,a)]]).
+initialstates([
+    [cl(a), cl(b)],
+    [cl(a), on(a,b)],
+    [cl(b), on(b,a)]]).
 
 % Three states
-initialstates([
-    [cl(a), cl(b), cl(c)],
-    [cl(a), cl(c), on(a,b)],
-    [cl(b), cl(c), on(b,a)],
-    [cl(a), cl(b), on(a,c)],
-    [cl(b), cl(c), on(c,a)],
-    [cl(a), cl(b), on(b,c)],
-    [cl(a), cl(c), on(c,b)],
-    [cl(a), on(a,b), on(b,c)],
-    [cl(a), on(a,c), on(c,b)],
-    [cl(b), on(b,a), on(a,c)],
-    [cl(b), on(b,c), on(c,a)],
-    [cl(c), on(c,a), on(a,b)],
-    [cl(c), on(c,b), on(b,a)]
-    ]).
+% initialstates([
+%     [cl(a), cl(b), cl(c)],
+%     [cl(a), cl(c), on(a,b)],
+%     [cl(b), cl(c), on(b,a)],
+%     [cl(a), cl(b), on(a,c)],
+%     [cl(b), cl(c), on(c,a)],
+%     [cl(a), cl(b), on(b,c)],
+%     [cl(a), cl(c), on(c,b)],
+%     [cl(a), on(a,b), on(b,c)],
+%     [cl(a), on(a,c), on(c,b)],
+%     [cl(b), on(b,a), on(a,c)],
+%     [cl(b), on(b,c), on(c,a)],
+%     [cl(c), on(c,a), on(a,b)],
+%     [cl(c), on(c,b), on(b,a)]
+%     ]).
 
 discountfactor(1). % used in the bellman update operator
 convergence_threshold(0.01). % residual for the VI algorithm to stop
@@ -48,8 +48,8 @@ transition(move(X,Y,Z), 0.1, -1,
             mydif(X,Y), mydif(Y, Z), mydif(X,Z).
 
 % a special form of the reward function
+% This is assumed to be an ordered list.
 state_reward(10, [on(a,b)]).
-
 %
 
 
@@ -87,7 +87,7 @@ oi(S):-
 % regress(PostCond, Transition, SARSTuple)
 % This uses backtracking to regress all possible ground SARS tuples
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-regress(SS, t(Act, Prob, R, Head, Body), sars(S, Act, Prob, SS)):-
+regress(SS, t(Act, _, TransR, Head, Body), sars(S, Act, R, SS)):-
     % get a subH
     subsetgen(Head, SubH),
     % create all possible \theta
@@ -97,7 +97,16 @@ regress(SS, t(Act, Prob, R, Head, Body), sars(S, Act, Prob, SS)):-
     ord_subtract(SSTT, SubHpTT, SSTail),
     % writeln(h(SSTT, SubHpTT, SSTail)),nl,
     precond(Head, SSTail, Body, S),
-    oi(S).
+    oi(S),
+    stateR(SS, StateR),
+    R is StateR + TransR.
+
+
+stateR(S, StateR):-
+    state_reward(StateR, StatePattern),
+    thetasubsumes(StatePattern, S), !.
+stateR(_, 0):-!.
+
 
 precond(Head, SSTail, Body, Glb):-
     extract(SSTail), extract(Body),
