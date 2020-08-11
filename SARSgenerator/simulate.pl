@@ -1,13 +1,58 @@
 :- use_module(precond).
 :- use_module(util).
 :- use_module(sorting).
+:- use_module(allgroundstates).
 
-domain([a, b]).
-% Two states
-initialstates([
-    [cl(a), cl(b)],
-    [cl(a), on(a,b)],
-    [cl(b), on(b,a)]]).
+
+
+% Use backtracking to generate all ground states
+% This produces duplicates...
+% E.g. [cl(X), cl(Y))] with domain([a,b]) generates
+% (1) [cl(a), cl(b))] and (2) [cl(b), cl(a))]
+generateInterpretations(Interpretation):-
+    domain(Domain),
+    allgroundstructures(ALLStructs),
+    member(Interpretation, ALLStructs),
+    permutation(Domain, Domainp),
+    term_variables(Interpretation,Domainp).
+
+% Ins is the set of all Ground interpretations!!!!
+allInterpretations:-
+    findall_Interpretations(In, generateInterpretations(In), Ins),
+    length(Ins, LIns),
+    printall(Ins),
+    write(LIns),
+    writeln(" ground states.").
+
+findall_Interpretations(X, Goal, Results) :-
+    State = state([]),
+    (
+    Goal,
+    arg(1, State, S0),
+    add(S0, X, S),
+    nb_setarg(1, State, S),
+    fail
+    ;
+    arg(1, State, Results)
+    ).
+
+add([], NewState, [NewState]) :- !.
+
+add([SomeState|States], NewState, [SomeState|States]):-
+    thetasubsumes(SomeState, NewState), !.
+
+add([SomeState|T0], NewState, [SomeState|T]) :-
+    add(T0, NewState, T), !.
+
+
+
+
+
+% % Two states
+% initialstates([
+%     [cl(a), cl(b)],
+%     [cl(a), on(a,b)],
+%     [cl(b), on(b,a)]]).
 
 % Three states
 % initialstates([

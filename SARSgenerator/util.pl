@@ -2,7 +2,7 @@
 constructAbsorbingQs/2, structsubset/3, filter/4,
 getVFStates/2, andstate/3, oi_qrule/2, legalstate/1,
 thetasubsumes/2, getstate/1, cartesian_dif/2,
- generateOIstate/2, termsInState/2]).
+ generateOIstate/2, termsInState/2, mysubset/2]).
 
 :- use_module(sorting).
 

@@ -437,7 +437,94 @@ def getlastvaluefunctionSARS(content):
     return lastvf
 
 
-if __name__ == '__main__':
+
+def partitions(n):
+	# base case of recursion: zero is the sum of the empty list
+	if n == 0:
+		yield []
+		return
+
+	# modify partitions of n-1 to form partitions of n
+	for p in partitions(n-1):
+		yield [1] + p
+		if p and (len(p) < 2 or p[1] > p[0]):
+			yield [p[0] + 1] + p[1:]
+
+
+def cl(blockNum):
+    return "cl(V"+str(blockNum)+")"
+
+def on(blockNum):
+    return "on(V"+str(blockNum-1)+", V"+str(blockNum)+")"
+
+
+
+
+def generateStructuresProlog(domain, filename):
+    """Given a domain,
+       Creates all blocksworld ground structures
+       and output to the given filename
+    """
+    # counter = 0
+    states = []
+    for parti in partitions(len(domain)):
+        parti.sort(reverse = True)
+        # counter += 1
+        # print("partition " + str(counter) + " " + str(parti))
+        cls = []
+        ons = []
+        blockNum = 1
+        for stack in parti:
+            cls.append(cl(blockNum))
+            blockNum += 1
+            for stackcounter in range(1,stack):
+                ons.append(on(blockNum))
+                blockNum += 1
+        state = cls + ons
+        state = "[" + ", ".join(state) + "]"
+        states.append(state)
+
+    structurestext = "[" + ", \n    ".join(states) + "]"
+    diff = []
+    for i in range(1,len(domain)+1):
+        for j in range(i+1, len(domain)+1):
+            diff.append("dif(V"+str(i)+", V"+str(j)+")")
+    difftext = ", ".join(diff)
+
+    text = "allgroundstructures(\n    "+structurestext+\
+           "):- \n    "+difftext+".\n"
+
+    domaintext = "domain([" + ", ".join(domain) +"]).\n\n"
+    with open(filename, "w") as f:
+        f.write(":- module(allgroundstructures, [allgroundstructures/1, domain/1]).\n\n")
+        f.write(domaintext)
+        f.write(text)
+
+def allgroundstates(domain=["a","b","c","d","e"]):
+    """Given a domain, creates all ground states.
+    """
+    expFolder = "experiments/"
+
+    # if path.exists(expFolder):
+    #     shutil.rmtree(expFolder)
+    if not path.exists(expFolder):
+        os.mkdir(expFolder)
+
+    generateStructuresProlog(domain, "allgroundstates.pl")
+    task = ["allInterpretations", ['swipl','-g','allInterpretations','-g','halt','simulate.pl']]
+    name = task[0]
+    expargs = task[1]
+
+    outputfilename = expFolder+name+".txt"
+    with open(outputfilename, 'w') as f:
+        process = subprocess.Popen(expargs, stdout=f)
+        process.communicate()
+
+
+def main_run_simulate_old():
+    """ This creates all SARS pairs (with bugs)
+    """
+
     expFolder = "experiments/"
 
     if path.exists(expFolder):
@@ -464,3 +551,6 @@ if __name__ == '__main__':
 
     sarsfile = expFolder+name+".png" # without file extension
     main(last_vf, imgfolder, sarsfile)
+
+if __name__ == '__main__':
+    allgroundstates()
