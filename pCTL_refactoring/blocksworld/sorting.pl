@@ -220,37 +220,66 @@ acompare(>, move(A1,B1,C1), move(A2,B2,C2)):-
 %
 %%%
 
+% qcompare(=, QRule1, QRule2):- QRule1 == QRule2, !.
+% qcompare(<, q(Q1,_,_), q(Q2,_,_)):- Q1 > Q2, !.
+% qcompare(>, q(Q1,_,_), q(Q2,_,_)):- Q1 < Q2, !.
+% qcompare(<, q(Q1,_,S1), q(Q2,_,S2)):-
+%     Q1 == Q2, scompare(<, S1, S2), !.
+% qcompare(>, q(Q1,_,S1), q(Q2,_,S2)):-
+%     Q1 == Q2, scompare(>, S1, S2), !.
+% qcompare(<, q(Q1,A1,S1), q(Q2,A2,S2)):-
+%     Q1 == Q2, scompare(=, S1, S2), acompare(<, A1, A2), !.
+% qcompare(<, q(Q1,A1,S1), q(Q2,A2,S2)):-
+%     Q1 == Q2, scompare(=, S1, S2), acompare(=, A1, A2), !.
+% qcompare(>, q(Q1,A1,S1), q(Q2,A2,S2)):-
+%     Q1 == Q2, scompare(=, S1, S2), acompare(>, A1, A2), !.
+%
+% qcompare(<, partialQ(Q1,_,_), partialQ(Q2,_,_)):- Q1 > Q2, !.
+% qcompare(>, partialQ(Q1,_,_), partialQ(Q2,_,_)):- Q1 < Q2, !.
+% qcompare(<, partialQ(Q,_,S1), partialQ(Q,_,S2)):-
+%     scompare(<, S1, S2), !.
+% qcompare(>, partialQ(Q,_,S1), partialQ(Q,_,S2)):-
+%     scompare(>, S1, S2), !.
+% qcompare(<, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
+%     scompare(=, S1, S2),
+%     acompare(<, A1, A2), !.
+% qcompare(<, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
+%     scompare(=, S1, S2),
+%     acompare(=, A1, A2), !.
+% qcompare(>, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
+%     scompare(=, S1, S2),
+%     acompare(>, A1, A2), !.
+
+%
 qcompare(=, QRule1, QRule2):- QRule1 == QRule2, !.
-qcompare(<, q(Q1,_,_), q(Q2,_,_)):- Q1 > Q2, !.
-qcompare(>, q(Q1,_,_), q(Q2,_,_)):- Q1 < Q2, !.
-qcompare(<, q(Q1,_,S1), q(Q2,_,S2)):-
+qcompare(<, q(Q1,_,_,_), q(Q2,_,_,_)):- Q1 > Q2, !.
+qcompare(>, q(Q1,_,_,_), q(Q2,_,_,_)):- Q1 < Q2, !.
+qcompare(<, q(Q1,_,S1,_), q(Q2,_,S2,_)):-
     Q1 == Q2, scompare(<, S1, S2), !.
-qcompare(>, q(Q1,_,S1), q(Q2,_,S2)):-
+qcompare(>, q(Q1,_,S1,_), q(Q2,_,S2,_)):-
     Q1 == Q2, scompare(>, S1, S2), !.
-qcompare(<, q(Q1,A1,S1), q(Q2,A2,S2)):-
+qcompare(<, q(Q1,A1,S1,_), q(Q2,A2,S2,_)):-
     Q1 == Q2, scompare(=, S1, S2), acompare(<, A1, A2), !.
-qcompare(<, q(Q1,A1,S1), q(Q2,A2,S2)):-
+qcompare(<, q(Q1,A1,S1,_), q(Q2,A2,S2,_)):-
     Q1 == Q2, scompare(=, S1, S2), acompare(=, A1, A2), !.
-qcompare(>, q(Q1,A1,S1), q(Q2,A2,S2)):-
+qcompare(>, q(Q1,A1,S1,_), q(Q2,A2,S2,_)):-
     Q1 == Q2, scompare(=, S1, S2), acompare(>, A1, A2), !.
 
-qcompare(<, partialQ(Q1,_,_), partialQ(Q2,_,_)):- Q1 > Q2, !.
-qcompare(>, partialQ(Q1,_,_), partialQ(Q2,_,_)):- Q1 < Q2, !.
-qcompare(<, partialQ(Q,_,S1), partialQ(Q,_,S2)):-
+qcompare(<, partialQ(Q1,_,_,_), partialQ(Q2,_,_,_)):- Q1 > Q2, !.
+qcompare(>, partialQ(Q1,_,_,_), partialQ(Q2,_,_,_)):- Q1 < Q2, !.
+qcompare(<, partialQ(Q,_,S1,_), partialQ(Q,_,S2,_)):-
     scompare(<, S1, S2), !.
-qcompare(>, partialQ(Q,_,S1), partialQ(Q,_,S2)):-
+qcompare(>, partialQ(Q,_,S1,_), partialQ(Q,_,S2,_)):-
     scompare(>, S1, S2), !.
-qcompare(<, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
+qcompare(<, partialQ(Q,A1,S1,_), partialQ(Q,A2,S2,_)):-
     scompare(=, S1, S2),
     acompare(<, A1, A2), !.
-qcompare(<, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
+qcompare(<, partialQ(Q,A1,S1,_), partialQ(Q,A2,S2,_)):-
     scompare(=, S1, S2),
     acompare(=, A1, A2), !.
-qcompare(>, partialQ(Q,A1,S1), partialQ(Q,A2,S2)):-
+qcompare(>, partialQ(Q,A1,S1,_), partialQ(Q,A2,S2,_)):-
     scompare(=, S1, S2),
     acompare(>, A1, A2), !.
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % list_to_set1(L1, L2): L2 is a set of a list L1
 % after trying to bind elements

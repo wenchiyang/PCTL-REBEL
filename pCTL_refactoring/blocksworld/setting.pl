@@ -3,6 +3,7 @@
                     discountfactor/1,
                     convergence_threshold/1,
                     transition/5,
+                    oi_option/1,
                     mydif/2]).
 
 % file_search_path(domain, 'blocksworld').
@@ -11,6 +12,8 @@ nonDetActions(nondet). % nondet/det
 blocks_limit(6). % non/an integer > 3
 discountfactor(1). %
 convergence_threshold(0.01). % residual for the VI algorithm to stop
+oi_option(force). % flexible : create oi states when needed
+                  % force : always create oi states
 
 
 % transition(

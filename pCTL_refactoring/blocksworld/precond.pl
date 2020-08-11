@@ -18,11 +18,12 @@ clean <=> true.
 
 % illegal states
 on_itself        @ on(X, X) <=> fail.
-not_clear        @ on(_,B), cl(B) <=> fail.
+not_clear        @ on(_,B)\ cl(B) <=> B = fl.
 on_two_blocks    @ on(A,B)\ on(A,D) <=> B=D.
 under_two_blocks @ on(A,B)\ on(C,B) <=> A=C.
-%fl_on_top        @ on(fl,_) <=> fail.
-duplicate_clear  @ cl(X) \ cl(X) <=> true.
+fl_on_top        @ on(fl,_) <=> fail.
+duplicate_clear  @ cl(X)\ cl(X) <=> true.
+duplicate_on     @ on(X,Y) \ on(X,Y) <=> true.
 
 collect, cl(X) <=> state([cl(X)]).
 collect, on(X,Y) <=> state([on(X,Y)]).

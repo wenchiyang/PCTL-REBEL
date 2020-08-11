@@ -173,6 +173,9 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     %%% step 3: filtering, producing value functions
         %statistics(runtime, [Start3|_]),
     % printall(QRules), nl, nl,
+    % print_message(informational, vfWithAction(QRules)),
+    % print_message(informational, unfilteredQRules(UnfilteredQRules)),
+    print_message(informational, vfWithAction(QRules)),
     qTransfer(QRules, NewVFs),
     !.
 
@@ -180,26 +183,26 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
 
 % use backtracking to generate all Q rules from all possible
 % combinations from partialQ1s and PartialQ2s
-getQ(SPQs1, SPQs2, Qrule):-
+getQ(SPQs1, SPQs2, QruleExtra):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
-    PartialQ1 = partialQ(Q1,A1,_),
-    PartialQ2 = partialQ(_,A2,_),
+    PartialQ1 = partialQ(Q1,A1,_,_),
+    PartialQ2 = partialQ(_,A2,_,_),
     Q1 > 0,
     A1=A2,
-    partialQstoQ(PartialQ1, PartialQ2, Qrule).
+    partialQstoQ(PartialQ1, PartialQ2, QruleExtra).
     % oi_qrule(Qrule).
 
 
-partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
-             q(Q, A, S2)):-
+partialQstoQ(partialQ(Q1,A,S1,_), partialQ(Q2,A,S2,SS2),
+             q(Q, A, S2, SS2)):-
     legalstate(S2),
     thetasubsumes(S1, S2), !,
     Q is Q1 + Q2, !.
 
-partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
-             q(Q, A, S1)):-
+partialQstoQ(partialQ(Q1,A,S1,SS1), partialQ(Q2,A,S2,_),
+             q(Q, A, S1, SS1)):-
     legalstate(S1),
     thetasubsumes(S2, S1), !,
     Q is Q1 + Q2, !.
@@ -248,7 +251,7 @@ wp2(VFs, Phi1s, PQ) :-
 % Takes an action rule "ActionHead <----Prob:[Act]---- ActionBody"
 % and a value function "VFValue <----- VFState"
 %%%%% Step 1 : get weakest precondition
-wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
+wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S,VFState)):-
      % get a subH
      subsetgen(Head, SubH),
      % create all possible \theta
@@ -258,7 +261,8 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
      ord_subtract(VFStateTT, SubHpTT, VFSTail),
      headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
               partialQ(Q,A,S)),
-     oi_qrule(partialQ(Q,A,S)).
+     oi_option(OI_option),
+     oi_qrule(partialQ(Q,A,S,VFState), OI_option).
 
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
@@ -275,7 +279,7 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
 
 %% TODO use maplist for this
 qTransfer([],[]):- !.
-qTransfer([q(Q,_,S)|Qs],[v(Q,S)|Vs]):-
+qTransfer([q(Q,_,S,_)|Qs],[v(Q,S)|Vs]):-
     qTransfer(Qs, Vs), !.
 
 
@@ -300,16 +304,16 @@ findall_Qrules(X, InitQs, Goal, Results) :-
 addQ([], New_QRule, [New_QRule]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addQ([q(Q1,A1,S1)|T0], q(Q,_,S), [q(Q1,A1,S1)|T0]) :-
+addQ([q(Q1,A1,S1,SS1)|T0], q(Q,_,S,_), [q(Q1,A1,S1,SS1)|T0]) :-
     Q1 >= Q,
     thetasubsumes(S1,S), !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
 % and add New_QRule
-addQ([q(Q1,_,S1)|T0], q(Q,A,S), T) :-
+addQ([q(Q1,_,S1,_)|T0], q(Q,A,S,SS), T) :-
     Q1 =< Q,
     thetasubsumes(S, S1), !,
-    addQ(T0, q(Q,A,S), T), !.
+    addQ(T0, q(Q,A,S,SS), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1
@@ -336,16 +340,16 @@ findall_partialQs(X, Goal, Results) :-
 addpartialQ([], New_partialQ, [New_partialQ]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), [partialQ(Q1,A1,S1)|T0]) :-
+addpartialQ([partialQ(Q1,A1,S1,SS1)|T0], partialQ(Q,A,S,_), [partialQ(Q1,A1,S1,SS1)|T0]) :-
     Q1 >= Q,
     thetasubsumes([A1|S1],[A|S]),
     !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
-addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), T) :-
+addpartialQ([partialQ(Q1,A1,S1,_)|T0], partialQ(Q,A,S,SS), T) :-
     Q1 =< Q,
     thetasubsumes([A|S], [A1|S1]),
-    addpartialQ(T0, partialQ(Q,A,S), T), !.
+    addpartialQ(T0, partialQ(Q,A,S,SS), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1

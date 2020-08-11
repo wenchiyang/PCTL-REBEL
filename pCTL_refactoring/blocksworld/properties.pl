@@ -11,9 +11,48 @@ experiment1:-
     % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
+% TODO: a bug here
+experimentXX:-
+    statistics(runtime, [Start|_]),
+    Phi = next(
+            _,
+            next(
+                _,
+                states([[on(a,b)]]),
+                >=,
+                0.9),
+            >=,
+            0.9
+            ), !,
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,R|_],
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
+
+experimentOR:-
+    statistics(runtime, [Start|_]),
+    Phi = until(_, 1, states([[]]), states([[on(a,b)],[cl(c)]]), >=, 0.6),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,R|_],
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
+experimentMOT :-
+    statistics(runtime, [Start|_]),
+    Phi =
+        until(_, 2,
+            next(_, states([[cl(e)]]), >=, 0.9),
+            states([[on(c,d)]]), >=, 0.6),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
+
 experimentX_iter_1 :-
     statistics(runtime, [Start|_]),
-    evaluate(next(_, states([[on(a,b)]]), >=, 0.9)), !,
+    evaluate(next(_, states([[cl(e)]]), >=, 0.9)), !,
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)).
 
@@ -313,7 +352,26 @@ message_hook(vf(CurrentVs), informational, _):-
     write("Number of abstract states: "), writeln(LCurrentVs),
     writeln("########").
 
+qtov(q(Q,A,S,SS), vf_SARS(s_(S),a_(A),r_(Q),ss_(SS))).
+qtov(partialQ(Q,A,S,SS), partialQ(s_(S),a_(A),r_(Q),ss_(SS))).
 
+message_hook(vfWithAction(QRules), informational, _):-
+    nl,
+    writeln("## value function with action ##"),
+    maplist(qtov, QRules, VRulesAct),
+    printall(VRulesAct),
+    length(VRulesAct, LVRulesAct),
+    write("Number of abstract states: "), writeln(LVRulesAct),
+    writeln("########").
+
+
+% message_hook(unfilteredQRules(QRules), informational, _):-
+%     nl,
+%     writeln("## SARS candidates ##"),
+%     printall(QRules),
+%     length(QRules, LQRules),
+%     write("Number of SARS candidates: "), writeln(LQRules),
+%     writeln("########").
 message_hook(partialQs(SPQs1, SPQs2), informational, _):-
     length(SPQs1, LSPQs1), length(SPQs2, LSPQs2),
     write("partialQs: "), writeln([LSPQs1, LSPQs2]).

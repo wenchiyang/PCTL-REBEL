@@ -1,11 +1,12 @@
 :- module(util, [subsetgen/2, extract/1, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/3, filter/4,
-getVFStates/2, andstate/3, oi_qrule/1, legalstate/1,
+getVFStates/2, andstate/3, oi_qrule/2, legalstate/1,
 thetasubsumes/2, getstate/1, cartesian_dif/2,
- generateOIstate/2]).
+ generateOIstate/2, termsInState/2]).
 
 :- use_module(sorting).
 :- use_module(setting).
+:- use_module(library(chr)).
 
 
 %%
@@ -81,8 +82,10 @@ getVFStates(VFs, States):-
     maplist(getVFState, VFs, States).
 
 %%
+% constructAbsorbingVFs([cl(c)], v(5.0, [cl(c)])):-!.
 constructAbsorbingVFs(S, v(1.0, S)).
-constructAbsorbingQs(S, q(1.0, _, S)).
+% constructAbsorbingQs([cl(c)], q(5.0, _, [cl(c)])):-!.
+constructAbsorbingQs(S, q(1.0, _, S, S)).
 
 % andstate/2:
 % get "E1 and E2"
@@ -108,7 +111,7 @@ termsInState(State, Terms):-
 generateOIstate([] , []) :- !.
 generateOIstate([E|Es] , [E|Set] ) :-
     maplist(mydif(E), Es), % TODO test the order
-    generateOIstate(Es , Set).
+    generateOIstate(Es , Set),!.
 
 generateOIstate([E|Es] , Set) :-
     member(E, Es),
@@ -124,21 +127,32 @@ generateBoundedStates(State, TermSet, LargestObjectNum, ObjectBound):-
     length(TermSetSet, LTermSetSet),
     LTermSetSet =< ObjectBound.
 
-oi_qrule(q(_,_,_)):-
+oi_qrule(q(_,_,_,_), flexible):-
     blocks_limit(non), !.
 
-oi_qrule(q(_,_,S)):-
+oi_qrule(q(_,_,S,_), flexible):-
     termsInState(S, Terms),
     length(Terms, LargestObjectNum),
     blocks_limit(ObjectBound),
     generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
 
-oi_qrule(partialQ(_,_,_)):-
+oi_qrule(partialQ(_,_,_,_), flexible):-
     blocks_limit(non), !.
 
-oi_qrule(partialQ(_,_,S)):-
+oi_qrule(partialQ(_,_,S,_), flexible):-
     termsInState(S, Terms),
     length(Terms, LargestObjectNum),
     blocks_limit(ObjectBound),
     generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
+
+% Force all partialQ to have OI states
+oi_qrule(partialQ(_,_,S,VFState), force):-
+    termsInState(S, Terms),
+    blocks_limit(ObjectBound),
+    generateOIstate(Terms, TermsSet),
+    legalstate(S),
+    legalstate(VFState),
+    length(TermsSet, LTermsSet),
+    LTermsSet =< ObjectBound
+    .
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%

@@ -3,14 +3,15 @@ import subprocess
 
 expFolder = 'experiments/'
 
-s = subprocess.Popen(['rm', '-r', expFolder])
-s.communicate()
-s = subprocess.Popen(['mkdir', expFolder])
-s.communicate()
+# s = subprocess.Popen(['rm', '-r', expFolder])
+# s.communicate()
+# s = subprocess.Popen(['mkdir', expFolder])
+# s.communicate()
 
 
 tasks = [
     ["exp1", ['swipl','-g','experiment1','-g','halt','properties.pl']]
+    # ["exp1", ['swipl','-g','experimentMOT','-g','halt','properties.pl']]
     # ["exp2", ['swipl','-g','experiment2','-g','halt','properties.pl']]
     # ["experimentX_iter_1", ['swipl','-g','experimentX_iter_1','-g','halt','properties.pl']],
     # ["experimentF_iter_1", ['swipl','-g','experimentF_iter_1','-g','halt','properties.pl']],
