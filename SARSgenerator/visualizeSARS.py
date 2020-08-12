@@ -108,7 +108,7 @@ class State:
             ons.remove(found_on)
         return ons, found_on
 
-    def save_to_file(self, filename):
+    def save_to_file(self, filename, with_frame=False):
         NUM_STACKS = len(self.stacks)
         try:
             HIGHEST_STACK_NUM = len(self.stacks[0])
@@ -130,10 +130,12 @@ class State:
         # ctx.set_source_rgba(0, 0, 0, 0)
         ctx.fill()
 
-        # ctx.rectangle(0, 0, WIDTH, HEIGHT)
+
         ctx.set_source_rgb(0, 0, 0)
         ctx.set_line_width(4)
-        # ctx.stroke()
+        if with_frame:
+            ctx.rectangle(0, 0, WIDTH, HEIGHT)
+            ctx.stroke()
         ##### draw frame #####
 
 
@@ -377,8 +379,7 @@ def vconcat_resize_max(im_list, interpolation=cv2.INTER_CUBIC):
 
 
 
-def main(valuefunction, imgfolder, imgfile):
-
+def createVFImages(valuefunction, imgfolder, imgfile):
 
     if path.exists(imgfolder):
         shutil.rmtree(imgfolder)
@@ -458,8 +459,6 @@ def on(blockNum):
     return "on(V"+str(blockNum-1)+", V"+str(blockNum)+")"
 
 
-
-
 def generateStructuresProlog(domain, filename):
     """Given a domain,
        Creates all blocksworld ground structures
@@ -500,6 +499,32 @@ def generateStructuresProlog(domain, filename):
         f.write(domaintext)
         f.write(text)
 
+
+
+
+def parseState(rule):
+    pattern_r = re.compile("(\[[_,()0-9a-zA-Z]*\])")
+    s = re.findall(pattern_r, rule)[0]
+
+    # Parses a state string to cl/1 and on/2 objects,
+    pattern_cl = re.compile("cl\(([_a-zA-Z0-9]+)\)")
+    pattern_on = re.compile("on\(([_a-zA-Z0-9]+),([_a-zA-Z0-9]+)\)")
+
+    cl_blocks_s = re.findall(pattern_cl, s)
+    ons = re.findall(pattern_on, s)
+    on_blocks_s = [blo for onblocks in ons for blo in onblocks]
+    blocks_s = set(cl_blocks_s + on_blocks_s)
+
+    # create objects...
+    block_objs_s = [Block(b) for b in blocks_s]
+    cl_objs_s = [Cl(b) for b in cl_blocks_s]
+    on_objs_s = [On(top,down) for (top,down) in ons]
+
+    # create a state object
+    state_s = State(0.0, " ", block_objs_s, cl_objs_s, on_objs_s)
+
+    return state_s
+
 def allgroundstates(domain=["a","b","c","d","e"]):
     """Given a domain, creates all ground states.
     """
@@ -519,6 +544,35 @@ def allgroundstates(domain=["a","b","c","d","e"]):
     with open(outputfilename, 'w') as f:
         process = subprocess.Popen(expargs, stdout=f)
         process.communicate()
+
+    ### create images
+    with open(outputfilename, 'r') as f:
+        content = f.read()
+
+    states = content.split("\n")[:-2]
+
+    # print(last_vf)
+    imgfolder = "tempfigures/"
+
+    if path.exists(imgfolder):
+        shutil.rmtree(imgfolder)
+    os.mkdir(imgfolder)
+    statesfile = expFolder+name+".png" # without file extension
+
+
+    # lines = valuefunction.split("\n")
+    counter = 0
+    vfimgs = []
+    for line in states:
+        if line:
+            counter += 1
+            state = parseState(line)
+            state.save_to_file(imgfolder+"gs"+str(counter)+".png", with_frame=True)
+            vfimgs.append(cv2.imread(imgfolder+"gs"+str(counter)+".png"))
+    imgs_resize = hconcat_resize_max(vfimgs)
+    cv2.imwrite(statesfile, imgs_resize)
+
+
 
 
 def main_run_simulate_old():
@@ -550,7 +604,7 @@ def main_run_simulate_old():
 
 
     sarsfile = expFolder+name+".png" # without file extension
-    main(last_vf, imgfolder, sarsfile)
+    createVFImages(last_vf, imgfolder, sarsfile)
 
 if __name__ == '__main__':
     allgroundstates()
