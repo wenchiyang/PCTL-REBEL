@@ -1,12 +1,13 @@
 :- module(util, [subsetgen/2, extract/1, constructAbsorbingVFs/2,
 constructAbsorbingQs/2, structsubset/3, filter/4,
 getVFStates/2, andstate/3, oi_qrule/2, legalstate/1,
-thetasubsumes/2, getstate/1, cartesian_dif/2,
+thetasubsumes_number/2, getstate/1, cartesian_dif/2,
  generateOIstate/2, termsInState/2]).
 
 :- use_module(sorting).
 :- use_module(setting).
 :- use_module(library(chr)).
+:- use_module(chr(chr_runtime)).
 
 
 %%
@@ -16,16 +17,19 @@ cartesian_dif([E|L1], L2):-
     cartesian_dif(L1,L2), !.
 
 
+thetasubsumes_number(S1,S2):-
+    \+(\+((
+%        writeln(thetasubsumes_number(S1,S2)),
+        numbervars(S2,999,_,[attvar(skip)]),
+        mysubset(S1,S2)
+    ))).
+
 thetasubsumes(S1,S2):-
-    % predInList(S1, cl, ClS1),length(ClS1, LClS1),
-    % predInList(S1, on, OnS1),length(OnS1, LOnS1),
-    % predInList(S2, cl, ClS2),length(ClS2, LClS2),
-    % predInList(S2, on, OnS2),length(OnS2, LOnS2),
-    % LClS1 =< LClS2, LOnS1 =<LOnS2,
     \+(\+((
         numbervars(S2,999,_,[attvar(bind)]),
         mysubset(S1,S2)
     ))).
+
 
 mysubset([], _) :- !.
 mysubset([E|R], Set) :-
@@ -55,18 +59,26 @@ extract([E|L]):-
 % output: SubS2
 structsubset(SubH, S2, SubS2):-
     stateGroup(SubH, GroupedSubH),
+%    writeln(stateGroup(SubH, GroupedSubH)),
     maplist(length, GroupedSubH, LGroupedSubH),
     stateGroup(S2, GroupedS2),
+%    writeln(stateGroup(S2, GroupedS2)),
     maplist(length, GroupedSubS2, LGroupedSubH),
     maplist(subsetgen, GroupedS2, GroupedSubS2),
+%    writeln(GroupedSubS2),
     % create all possible \theta
     maplist(permutation, GroupedSubH, GroupedSubHp),
+%    writeln(["eee",GroupedSubHp, GroupedSubS2]),
     maplist(=, GroupedSubHp, GroupedSubS2),
+%    writeln("ggg"),
     flatten(GroupedSubS2, SubS2).
+%    writeln("fff").
 
 getstate(Glb):-
     collect,
+%    chr_show_store(precond),
     findstate(Glb1), clean, !,
+%    writeln(Glb1),
     subsumesort(Glb1,Glb).
 
 
