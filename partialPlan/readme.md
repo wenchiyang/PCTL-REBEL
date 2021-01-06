@@ -9,14 +9,6 @@ q(R,A,S,S') is the q-function where
 - S is current state
 - S' is the next state
 
-## Simulate all SARS tuples in a RMDP
-
-Specify the transition function and reward function in simulate.pl
-
-```console
-$ python generateSARS.py
-```
-
 
 ## Generating a partial plan from a value function
 

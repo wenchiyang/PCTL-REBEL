@@ -581,30 +581,81 @@ def main_run_simulate_old():
 
     expFolder = "experiments/"
 
-    if path.exists(expFolder):
-        shutil.rmtree(expFolder)
-    # if not path.exists(expFolder):
-    os.mkdir(expFolder)
+    # if path.exists(expFolder):
+    #     shutil.rmtree(expFolder)
+    # # if not path.exists(expFolder):
+    # os.mkdir(expFolder)
+    #
+    # task = ["simulate", ['swipl','-g','p','-g','halt','simulate.pl']]
+    # name = task[0]
+    # expargs = task[1]
+    #
+    # outputfilename = expFolder+name+".txt"
+    # with open(outputfilename, 'w') as f:
+    #     process = subprocess.Popen(expargs, stdout=f)
+    #     process.communicate()
+    #
+    # with open(outputfilename, 'r') as f:
+    #     content = f.read()
+    # last_vf = getlastvaluefunctionSARS(content)
+    # # print(last_vf)
+    # imgfolder = "tempfigures/"
+    #
+    # sarsfile = expFolder+name+".png" # without file extension
+    # createVFImages(last_vf, imgfolder, sarsfile)
 
-    task = ["simulate", ['swipl','-g','p','-g','halt','simulate.pl']]
-    name = task[0]
-    expargs = task[1]
-
-    outputfilename = expFolder+name+".txt"
-    with open(outputfilename, 'w') as f:
-        process = subprocess.Popen(expargs, stdout=f)
-        process.communicate()
-
-    with open(outputfilename, 'r') as f:
-        content = f.read()
-
-    last_vf = getlastvaluefunctionSARS(content)
-    # print(last_vf)
-    imgfolder = "tempfigures/"
+    content = [0,0,0,0]
+    content[0] = """## value function with action ##
+partialQ(s_([cl(a),cl(b),on(a,_29126)]),a_(move(a,b,_29126)),r_(7.2),ss_([on(a,b)]))
+partialQ(s_([cl(_29302),cl(_29486),on(a,b),on(_29302,_29366)]),a_(move(_29302,_29486,_29366)),r_(7.2),ss_([on(a,b)]))
+partialQ(s_([cl(_29746),cl(_29886),on(_29746,_29810)]),a_(move(_29746,_29886,_29810)),r_(-1.8),ss_([]))
+Number of abstract states: 3
+########"""
 
 
-    sarsfile = expFolder+name+".png" # without file extension
-    createVFImages(last_vf, imgfolder, sarsfile)
+    content[1] = """## value function with action ##
+partialQ(s_([cl(a),cl(_39644),on(a,b)]),a_(move(a,_39644,b)),r_(0.8),ss_([on(a,b)]))
+partialQ(s_([cl(_39820),cl(_40004),on(a,b),on(_39820,_39884)]),a_(move(_39820,_40004,_39884)),r_(0.8),ss_([on(a,b)]))
+partialQ(s_([cl(_40196),cl(_40336),on(_40196,_40260)]),a_(move(_40196,_40336,_40260)),r_(-0.2),ss_([]))
+Number of abstract states: 3
+########"""
+
+
+    content[2] = """## value function with action ##
+partialQ(s_([cl(a),cl(b),on(a,_171892)]),a_(move(a,b,_171892)),r_(7.2),ss_([on(a,b)]))
+partialQ(s_([cl(_172068),cl(_172252),on(a,b),on(_172068,_172132)]),a_(move(_172068,_172252,_172132)),r_(7.2),ss_([on(a,b)]))
+partialQ(s_([cl(a),cl(_172512),on(a,b)]),a_(move(a,_172512,b)),r_(4.5),ss_([cl(a),cl(b),on(a,_172512)]))
+partialQ(s_([cl(a),cl(b),cl(_172884),on(a,_172948)]),a_(move(a,_172884,_172948)),r_(4.5),ss_([cl(a),cl(b),on(a,_172884)]))
+partialQ(s_([cl(b),cl(_173386),on(b,a),on(a,_173538)]),a_(move(b,_173386,a)),r_(4.5),ss_([cl(a),cl(b),on(a,_173538)]))
+partialQ(s_([cl(a),cl(b),cl(_173790),on(a,_174104),on(b,_173898)]),a_(move(b,_173790,_173898)),r_(4.5),ss_([cl(a),cl(b),on(a,_174104)]))
+partialQ(s_([cl(a),cl(_174368),cl(_174520),on(a,_174682),on(_174368,b)]),a_(move(_174368,_174520,b)),r_(4.5),ss_([cl(a),cl(b),on(a,_174682)]))
+partialQ(s_([cl(b),cl(_174946),cl(_175098),on(a,_175260),on(_174946,a)]),a_(move(_174946,_175098,a)),r_(4.5),ss_([cl(a),cl(b),on(a,_175260)]))
+partialQ(s_([cl(a),cl(b),cl(_175524),cl(_175840),on(a,_176068),on(_175524,_175676)]),a_(move(_175524,_175840,_175676)),r_(4.5),ss_([cl(a),cl(b),on(a,_176068)]))
+partialQ(s_([cl(_176332),cl(_176472),on(_176332,_176396)]),a_(move(_176332,_176472,_176396)),r_(-1.8),ss_([]))
+Number of abstract states: 10
+########"""
+
+    content[3] = """## value function with action ##
+partialQ(s_([cl(a),cl(_296918),on(a,b)]),a_(move(a,_296918,b)),r_(0.8),ss_([on(a,b)]))
+partialQ(s_([cl(_297094),cl(_297278),on(a,b),on(_297094,_297158)]),a_(move(_297094,_297278,_297158)),r_(0.8),ss_([on(a,b)]))
+partialQ(s_([cl(a),cl(b),on(a,_297470)]),a_(move(a,b,_297470)),r_(0.5),ss_([cl(a),cl(b),on(a,_297470)]))
+partialQ(s_([cl(a),cl(b),cl(_297842),on(a,_297950)]),a_(move(a,_297842,_297950)),r_(0.5),ss_([cl(a),cl(b),on(a,_297950)]))
+partialQ(s_([cl(a),cl(b),on(a,_298484),on(b,_298344)]),a_(move(b,a,_298344)),r_(0.5),ss_([cl(a),cl(b),on(a,_298484)]))
+partialQ(s_([cl(a),cl(b),cl(_298748),on(a,_299018),on(_298748,_298856)]),a_(move(_298748,b,_298856)),r_(0.5),ss_([cl(a),cl(b),on(a,_299018)]))
+partialQ(s_([cl(a),cl(b),cl(_299282),on(a,_299552),on(_299282,_299390)]),a_(move(_299282,a,_299390)),r_(0.5),ss_([cl(a),cl(b),on(a,_299552)]))
+partialQ(s_([cl(a),cl(b),cl(_299816),on(a,_300086),on(b,_299924)]),a_(move(b,_299816,_299924)),r_(0.5),ss_([cl(a),cl(b),on(a,_300086)]))
+partialQ(s_([cl(a),cl(b),cl(_300350),cl(_300578),on(a,_300806),on(_300350,_300502)]),a_(move(_300350,_300578,_300502)),r_(0.5),ss_([cl(a),cl(b),on(a,_300806)]))
+partialQ(s_([cl(_301070),cl(_301210),on(_301070,_301134)]),a_(move(_301070,_301210,_301134)),r_(-0.2),ss_([]))
+Number of abstract states: 10
+########"""
+    for i in range(4):
+        last_vf = getlastvaluefunctionSARS(content[i])
+        # print(last_vf)
+        imgfolder = "tempfigures/"
+
+        sarsfile = expFolder+"test"+str(i)+".png" # without file extension
+        createVFImages(last_vf, imgfolder, sarsfile)
 
 if __name__ == '__main__':
     allgroundstates()
+    # main_run_simulate_old()

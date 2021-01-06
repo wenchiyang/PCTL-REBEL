@@ -11,6 +11,25 @@ experiment1:-
     % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
+% TODO: a bug here, fix the bug in pCTL_refactoring
+experimentXX:-
+    statistics(runtime, [Start|_]),
+    Phi = next(
+            _,
+            next(
+                _,
+                states([[on(a,b)]]),
+                >=,
+                0.9),
+            >=,
+            0.9
+            ), !,
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,R|_],
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
 experimentX_iter_1 :-
     statistics(runtime, [Start|_]),
     evaluate(next(_, states([[on(a,b)]]), >=, 0.9)), !,

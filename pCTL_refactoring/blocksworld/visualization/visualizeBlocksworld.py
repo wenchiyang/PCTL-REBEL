@@ -205,7 +205,7 @@ class BlocksWorld:
 def parse(state):
     """Parses the string to cl/1 and on/2 objects,
     """
-    pattern_q = re.compile("[a-zA-Z]+\(([0-9.]+),")
+    pattern_q = re.compile("[a-zA-Z]+\(([-0-9.]+),")
     q = re.findall(pattern_q, state)[0]
 
     pattern_cl = re.compile("cl\(([_a-zA-Z0-9]+)\)")
@@ -298,6 +298,15 @@ def getlastvaluefunction(content):
     lastvf = lastvf.split("\n")[1:-2]
     return lastvf
     # return vf[-1]
+
+def getgoodinterpretations(content):
+    content = content.replace("\n", "|")
+    pattern_vf = re.compile(r'## good interpretations ##([^#]*)########')
+    # capture the last value function
+    lastvf = re.findall(pattern_vf, content)[0].replace("|","\n")
+    # remove irrelevant lines
+    lastvf = lastvf.split("\n")[1:-2]
+    return lastvf
 
 # valuefunction = \
 # """

@@ -280,7 +280,7 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S,VFState)):-
      headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
               partialQ(Q,A,S)),
      oi_option(OI_option),
-     oi_qrule(partialQ(Q,A,S), OI_option).
+     oi_qrule(partialQ(Q,A,S,VFState), OI_option).
      % oi_qrule_force(partialQ(Q,A,S)).
 
 

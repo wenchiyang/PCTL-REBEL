@@ -1,8 +1,7 @@
-:- module(util, [subsetgen/2, extract/1, constructAbsorbingVFs/2,
-constructAbsorbingQs/2, structsubset/3, filter/4,
+:- module(util, [subsetgen/2, extract/1, structsubset/3, filter/4,
 getVFStates/2, andstate/3, oi_qrule/2, legalstate/1,
 thetasubsumes/2, getstate/1, cartesian_dif/2,
- generateOIstate/2, termsInState/2]).
+ generateOIstate/2, termsInState/2, matchreward/4]).
 
 :- use_module(sorting).
 :- use_module(setting).
@@ -82,10 +81,9 @@ getVFStates(VFs, States):-
     maplist(getVFState, VFs, States).
 
 %%
-% constructAbsorbingVFs([cl(c)], v(5.0, [cl(c)])):-!.
-constructAbsorbingVFs(S, v(1.0, S)).
-% constructAbsorbingQs([cl(c)], q(5.0, _, [cl(c)])):-!.
-constructAbsorbingQs(S, q(1.0, _, S, S)).
+
+
+
 
 % andstate/2:
 % get "E1 and E2"
@@ -117,6 +115,7 @@ generateOIstate([E|Es] , Set) :-
     member(E, Es),
     generateOIstate(Es , Set).
 
+%
 generateBoundedStates(_, _, LargestObjectNum, ObjectBound):-
     LargestObjectNum =< ObjectBound.
 
@@ -146,13 +145,26 @@ oi_qrule(partialQ(_,_,S,_), flexible):-
     generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
 
 % Force all partialQ to have OI states
+% TODO: take into account fl
 oi_qrule(partialQ(_,_,S,VFState), force):-
     termsInState(S, Terms),
-    blocks_limit(ObjectBound),
-    generateOIstate(Terms, TermsSet),
+    generateOIstate(Terms, _),
     legalstate(S),
-    legalstate(VFState),
-    length(TermsSet, LTermsSet),
-    LTermsSet =< ObjectBound
-    .
+    legalstate(VFState).
+    % length(TermsSet, LTermsSet),
+    % blocks_limit(ObjectBound),
+    % LTermsSet =< ObjectBound
+    % .
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
+matchreward(Action, RReward, Head, Body):-
+    reward(RAction, RReward, RHead, RBody),
+    rulethetasubsumes([RBody,RAction,RHead], [Body,Action,Head]), !.
+
+% This binds the variables in the reward rules
+rulethetasubsumes([Pre1,A1,Post1],[Pre2,A2,Post2]):-
+    \+(\+((
+        numbervars([Pre2,A2,Post2],999,_,[attvar(bind)]),
+        mysubset(Pre1,Pre2),
+        mysubset([A1],[A2]),
+        mysubset(Post1,Post2)
+    ))).

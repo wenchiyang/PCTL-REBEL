@@ -11,8 +11,8 @@ expFolder = 'experiments/'
 
 tasks = [
     ["exp1", ['swipl','-g','experiment1','-g','halt','properties.pl']]
-    # ["exp1", ['swipl','-g','experimentMOT','-g','halt','properties.pl']]
-    # ["exp2", ['swipl','-g','experiment2','-g','halt','properties.pl']]
+    # ["expOR", ['swipl','-g','experimentOR','-g','halt','properties.pl']]
+    # ["expMOT", ['swipl','-g','experimentMOT','-g','halt','properties.pl']]
     # ["experimentX_iter_1", ['swipl','-g','experimentX_iter_1','-g','halt','properties.pl']],
     # ["experimentF_iter_1", ['swipl','-g','experimentF_iter_1','-g','halt','properties.pl']],
     # ["experimentU_iter_1", ['swipl','-g','experimentU_iter_1','-g','halt','properties.pl']]
@@ -33,3 +33,7 @@ for exp in tasks:
         imgfolder = "visualization/tempfigures/"
         imgfile = expFolder+name+".jpg"
         visualizeBlocksworld.main(last_vf, imgfolder, imgfile)
+
+        imggoodfile = expFolder+name+"good.jpg"
+        goods = visualizeBlocksworld.getgoodinterpretations(content)
+        visualizeBlocksworld.main(goods, imgfolder, imggoodfile)

@@ -150,11 +150,13 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %write("stack before partialQ2 : "),
         %print_message(informational, stackusage(Used2)),
     % printall(SPQs1), nl,nl,
+    % print_message(informational, vfWithAction(SPQs1)),
     getPartialQwp2(VFs1, Phi1s, SPQs2), !,
         %statistics(global_stack, [Used3,_]),
         %write("stack before combining partialQs : "),
         %print_message(informational, stackusage(Used3)),
-    % printsp(SPQs2), nl,nl,
+    % printall(SPQs2), nl,nl,
+    % print_message(informational, vfWithAction(SPQs2)),
         statistics(runtime, [Stop1|_]),
         print_message(informational, partialQs(SPQs1, SPQs2)),
         print_message(informational, partialQtime(Start1, Stop1)),
@@ -175,7 +177,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     % printall(QRules), nl, nl,
     % print_message(informational, vfWithAction(QRules)),
     % print_message(informational, unfilteredQRules(UnfilteredQRules)),
-    print_message(informational, vfWithAction(QRules)),
+    % print_message(informational, vfWithAction(QRules)),
     qTransfer(QRules, NewVFs),
     !.
 
@@ -187,12 +189,21 @@ getQ(SPQs1, SPQs2, QruleExtra):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
-    PartialQ1 = partialQ(Q1,A1,_,_),
+    PartialQ1 = partialQ(_,A1,_,_),
     PartialQ2 = partialQ(_,A2,_,_),
-    Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, QruleExtra).
-    % oi_qrule(Qrule).
+    % (
+    % % QruleExtra = q(18.9,_,_,_)
+    % true
+    % ->
+    % writeln(PartialQ1),
+    % writeln(PartialQ2),
+    % writeln(QruleExtra),nl
+    % ;
+    % true
+    % % oi_qrule(Qrule).
+    % ).
 
 
 partialQstoQ(partialQ(Q1,A,S1,_), partialQ(Q2,A,S2,SS2),
@@ -251,30 +262,46 @@ wp2(VFs, Phi1s, PQ) :-
 % Takes an action rule "ActionHead <----Prob:[Act]---- ActionBody"
 % and a value function "VFValue <----- VFState"
 %%%%% Step 1 : get weakest precondition
-wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S,VFState)):-
-     % get a subH
-     subsetgen(Head, SubH),
-     % create all possible \theta
-     structsubset(SubH, VFState, SubHp),
-     % create VFSTail using \theta
-     sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
-     ord_subtract(VFStateTT, SubHpTT, VFSTail),
-     headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-              partialQ(Q,A,S)),
-     oi_option(OI_option),
-     oi_qrule(partialQ(Q,A,S,VFState), OI_option).
+wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(NewVFValue,A,S,VFState)):-
+    % get a subH
+    subsetgen(Head, SubH),
+    % create all possible \theta
+    structsubset(SubH, VFState, SubHp),
+    % create VFSTail using \theta
+    sort(VFState, VFStateTT), sort(SubHp, SubHpTT),
+    ord_subtract(VFStateTT, SubHpTT, VFSTail),
+    headbody(Head, VFSTail, Act, Body, Phi1s,
+          partialQ(A,S)),
+    oi_option(OI_option),
+    oi_qrule(partialQ(_,A,S,VFState), OI_option),
+    %%%% GET NEW VALUE %%%%
+    discountfactor(Discount),
+    append(Head, VFSTail, BBody),
+    matchreward(A, RReward, S, BBody),
+    % writeln(matchreward(A, RReward, S, BBody)),
+    % writeln(RReward), nl,
+    NewVFValue is Prob * (RReward + VFValue * Discount).
+    % (
+    % % NewVFValue = 18.9
+    % true
+    % ->
+    %     % write(NewVFValue), write(" "), writeln(matchreward(A, RReward, S, BBody))
+    %     writeln(partialQ(NewVFValue,A,S,VFState))
+    %     ;
+    %     true
+    % ).
+     %%%%            %%%%
 
 
-headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
-        partialQ(NewVFValue, Act, Glb)) :-
+headbody(Head, VFSTail, Act, Body, Phi1s,
+        partialQ(Act, Glb)) :-
     member(Phi1, Phi1s), extract(Phi1), extract(VFSTail), extract(Body),
     getstate(GlbTT),
     subsumesort(GlbTT, Glb),
     sort(Head, HeadTT), sort(Body, BodyTT),
     ord_union(HeadTT, BodyTT, Lpp),
-    cartesian_dif(VFSTail, Lpp),
-    discountfactor(Discount),
-    NewVFValue is Prob * VFValue * Discount.
+    cartesian_dif(VFSTail, Lpp).
+
 
 
 %% TODO use maplist for this
@@ -289,10 +316,16 @@ findall_Qrules(X, InitQs, Goal, Results) :-
     (
     Goal,
     arg(1, State, S0),
-    % writeln(X),
     addQ(S0, X, S),
     sortByQValue(S, SortedS), % OPTIMIZE
     nb_setarg(1, State, SortedS),
+
+    % writeln("=1======="),
+    % printall(S0),writeln("."),
+    % writeln(X),writeln("."),
+    % printall(SortedS),
+    % writeln("=2======="),
+
     fail
     ;
     arg(1, State, Results)

@@ -12,7 +12,9 @@ def run():
 
 
     tasks = [
-        ["exp1", ['swipl','-g','experiment1','-g','halt','properties.pl']]
+        ["exp1", ['swipl','-g','experiment1','-g','halt','properties.pl']],
+        # ["expXX", ['swipl','-g','experimentXX','-g','halt','properties.pl']]
+
         # ["exp2", ['swipl','-g','experiment2','-g','halt','properties.pl']]
         # ["experimentX_iter_1", ['swipl','-g','experimentX_iter_1','-g','halt','properties.pl']],
         # ["experimentF_iter_1", ['swipl','-g','experimentF_iter_1','-g','halt','properties.pl']],

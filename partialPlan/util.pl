@@ -143,8 +143,8 @@ oi_qrule(partialQ(_,_,S), flexible):-
     generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
 
 % Force all partialQ to have OI states
-oi_qrule(partialQ(_,_,S), force):-
+oi_qrule(partialQ(_,_,S,VFState), force):-
     termsInState(S, Terms),
     generateOIstate(Terms, _),
-    legalstate(S).
+    legalstate(S), legalstate(VFState).
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
