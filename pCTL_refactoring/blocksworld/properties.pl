@@ -2,6 +2,19 @@
 :- use_module(precond).
 
 
+
+
+test_untilequal:-
+    statistics(runtime, [Start|_]),
+    Phi = untilequal(FinalStates, 3, states([[cl(b)]]), states([[on(a,b)]]), >=, 0.6),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,R|_],
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)),
+    printall(FinalStates).
+
+
 experiment1:-
     statistics(runtime, [Start|_]),
     Phi = until(_, 1, states([[]]), states([[on(a,b)]]), >=, 0.6),

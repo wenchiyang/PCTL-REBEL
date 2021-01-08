@@ -48,6 +48,13 @@ evaluate(Phi) :-
     % length(PhiStates, L1), length(SortedStates, L2),
     % print_message(informational, phistates(Phi)).
 
+% evaluate until^{=} formula:
+% PhiStates == P_{Op Threshold} [Phi1 U^{= Steps} Phi2]
+evaluate(Phi) :-
+    Phi =.. [untilequal, PhiStates, Steps, Phi1, Phi2, Op, Threshold],
+    evaluate(Phi1), !, arg(1, Phi1, Phi1States),
+    evaluate(Phi2), !, arg(1, Phi2, Phi2States),
+    apply(untilequal, [PhiStates, Steps, Phi1States, Phi2States, Op, Threshold]), !.
 
 % get cartesian product of two state lists,
 % Res is a list of combined states
@@ -67,6 +74,13 @@ until(SortedStates, Steps, Phi1s, Phi2s, Op, Threshold) :-
     getVFStates(NewVN, SortedStates),
     !.
 
+untilequal(SortedStates, Steps, Constr, Phi2s, Op, Threshold) :-
+    maplist(constructAbsorbingVFs,Phi2s,InitV), !,
+    vi_untilequal(Steps, 1, InitV, _, Constr, FinalVs), !,
+    filter(FinalVs, Op, Threshold, NewVN), !,
+    getVFStates(NewVN, SortedStates),
+    !.
+
 next(SortedStates, Phi2s, Op, Threshold) :-
     maplist(constructAbsorbingVFs,Phi2s,InitV), !,
     vi(1, 1, InitV, _,[[]], [], FinalVs), !,
@@ -74,11 +88,31 @@ next(SortedStates, Phi2s, Op, Threshold) :-
     getVFStates(NewVN, SortedStates),
     !.
 
+% State S1 is subsumed by one of the constraint in Constrs
+apply_constraint(Constrs, v(_, S1)):-
+    member(Constr, Constrs),
+    thetasubsumes(Constr, S1), !.
+
+% case 1: stop when the step bound is met
+vi_untilequal(TotalSteps, CurrentStep, InitV, _, Constr, FinalVs):-
+    TotalSteps =:= CurrentStep,
+    valueIteration(CurrentStep, InitV, CurrentVs, [[]], []), nl,
+    include(apply_constraint(Constr), CurrentVs, FinalVs), !.
+
+% case 2: calculate the new iteration when the step bound is not met
+vi_untilequal(TotalSteps, CurrentStep, InitV, _, Constr, FinalVs):-
+    valueIteration(CurrentStep, InitV, CurrentVs, [[]], []), nl,
+    NextStep is CurrentStep + 1,
+    include(apply_constraint(Constr), CurrentVs, NextInitV),
+    vi_untilequal(TotalSteps, NextStep, NextInitV, _, Constr, FinalVs),
+    !.
+
 convergence([], [], _) :- !.
 convergence([v(Q1, _)|PreviousVs], [v(Q2, _)|CurrentVs], ConvergenceThreshold) :-
     Residual is abs(Q1-Q2),
     Residual < ConvergenceThreshold,
     convergence(PreviousVs,CurrentVs,ConvergenceThreshold), !.
+
 
 % % case 1: stop when the step bound is met
 vi(TotalSteps, CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs, FinalVs):-

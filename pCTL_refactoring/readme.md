@@ -6,7 +6,7 @@
 
 - SWI-Prolog newer than 8.0.2
 - Python 3  ( tested with 3.7.6 )
-- Python package : pycairo
+- Python package for visualization: pycairo, opencv-python
 
 ### Installation
 
