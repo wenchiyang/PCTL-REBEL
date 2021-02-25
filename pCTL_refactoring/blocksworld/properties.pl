@@ -2,8 +2,6 @@
 :- use_module(precond).
 
 
-
-
 test_untilequal:-
     statistics(runtime, [Start|_]),
     Phi = untilequal(FinalStates, 3, states([[cl(b)]]), states([[on(a,b)]]), >=, 0.6),

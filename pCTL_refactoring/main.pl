@@ -183,12 +183,13 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
         %statistics(global_stack, [Used2,_]),
         %write("stack before partialQ2 : "),
         %print_message(informational, stackusage(Used2)),
-    % printall(SPQs1), nl,nl,
+%    printall(SPQs1), nl,nl,
     getPartialQwp2(VFs1, Phi1s, SPQs2), !,
         %statistics(global_stack, [Used3,_]),
         %write("stack before combining partialQs : "),
         %print_message(informational, stackusage(Used3)),
-    % printsp(SPQs2), nl,nl,
+%    printall(SPQs2), nl,nl,
+%    printsp(SPQs2), nl,nl,
         statistics(runtime, [Stop1|_]),
         print_message(informational, partialQs(SPQs1, SPQs2)),
         print_message(informational, partialQtime(Start1, Stop1)),
@@ -209,7 +210,7 @@ oneIteration(VFs, NewVFs, Phi1s, Phi2sQs):-
     % printall(QRules), nl, nl,
     % print_message(informational, vfWithAction(QRules)),
     % print_message(informational, unfilteredQRules(UnfilteredQRules)),
-    print_message(informational, vfWithAction(QRules)),
+%    print_message(informational, vfWithAction(QRules)),
     qTransfer(QRules, NewVFs),
     !.
 
@@ -361,6 +362,7 @@ findall_partialQs(X, Goal, Results) :-
   State = state([]),
   (  Goal,
      arg(1, State, S0),
+%     writeln(S0),
      addpartialQ(S0, X, S),
      sortByQValue(S, SortedS),
      nb_setarg(1, State, SortedS),
@@ -375,12 +377,14 @@ addpartialQ([], New_partialQ, [New_partialQ]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
 addpartialQ([partialQ(Q1,A1,S1,SS1)|T0], partialQ(Q,A,S,_), [partialQ(Q1,A1,S1,SS1)|T0]) :-
+%    writeln(2),
     Q1 >= Q,
     thetasubsumes([A1|S1],[A|S]),
     !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
 addpartialQ([partialQ(Q1,A1,S1,_)|T0], partialQ(Q,A,S,SS), T) :-
+%    writeln(3),
     Q1 =< Q,
     thetasubsumes([A|S], [A1|S1]),
     addpartialQ(T0, partialQ(Q,A,S,SS), T), !.
@@ -388,7 +392,10 @@ addpartialQ([partialQ(Q1,A1,S1,_)|T0], partialQ(Q,A,S,SS), T) :-
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1
 addpartialQ([PartialQ1|T0], New_partialQ, [PartialQ1|T]) :-
+%    writeln(4),
+%    writeln(addpartialQ(T0, New_partialQ, T)),
     addpartialQ(T0, New_partialQ, T), !.
+
 
 legalaction(move(X,Y,Z)):-
   X\=Y, Y\=Z, Z\=X, !.

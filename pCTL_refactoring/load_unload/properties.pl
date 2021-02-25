@@ -69,3 +69,15 @@ printall([]):- !.
 printall([E|R]):-
     writeln(E),
     printall(R),!.
+
+qtov(q(Q,A,S,SS), vf_SARS(s_(S),a_(A),r_(Q),ss_(SS))).
+qtov(partialQ(Q,A,S,SS), partialQ(s_(S),a_(A),r_(Q),ss_(SS))).
+
+%message_hook(vfWithAction(QRules), informational, _):-
+%    nl,
+%    writeln("## value function with action ##"),
+%    maplist(qtov, QRules, VRulesAct),
+%    printall(VRulesAct),
+%    length(VRulesAct, LVRulesAct),
+%    write("Number of abstract states: "), writeln(LVRulesAct),
+%    writeln("########").

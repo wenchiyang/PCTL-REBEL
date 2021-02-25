@@ -1,17 +1,19 @@
 :- module(setting, [nonDetActions/1,
                     blocks_limit/1,
-                    highway/2,
                     discountfactor/1,
                     convergence_threshold/1,
                     transition/5,
-                    mydif/2]).
+                    oi_option/1,
+                    mydif/2
+%                    highway/2
+                    ]).
 
 
 nonDetActions(nondet). % nondet/det
-blocks_limit(non). % non/an integer > 3
+blocks_limit(100). % non/an integer > 3
 discountfactor(0.9). %
-convergence_threshold(0.01). % residual for the VI algorithm to stop
-
+convergence_threshold(0.0001). % residual for the VI algorithm to stop
+oi_option(force).
 
 % transition(
 %     action,
@@ -42,22 +44,24 @@ transition(load(B,T), 2, 0.1,
 transition(drive(T,C1), 1, 1.0,
         [tin(T,C1)],
         [tin(T,C2)]):-
-            highway(C1,C2), mydif(C1,C2), mydif(T,C1), mydif(T,C2).
+%            highway(C1,C2),
+            mydif(C1,C2), mydif(T,C1), mydif(T,C2).
 
 transition(drive(T,C1), 2, 0.0,
         [tin(T,C2)],
         [tin(T,C2)]):-
-            highway(C1,C2), mydif(C1,C2), mydif(T,C1), mydif(T,C2).
+%            highway(C1,C2),
+            mydif(C1,C2), mydif(T,C1), mydif(T,C2).
 
 mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
 
 
-highway(brussels, paris).
-highway(brussels, rome).
-
-highway(paris, brussels).
-
-highway(rome, brussels).
+%highway(brussels, paris).
+%highway(brussels, rome).
+%
+%highway(paris, brussels).
+%
+%highway(rome, brussels).
 % highway(rome, berlin).
 % highway(berlin, rome).
 % highway(brussels, berlin).
