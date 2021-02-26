@@ -13,7 +13,7 @@ nonDetActions(nondet). % nondet/det
 blocks_limit(100). % non/an integer > 3
 discountfactor(0.9). %
 convergence_threshold(0.0001). % residual for the VI algorithm to stop
-oi_option(force).
+oi_option(flexible).
 
 % transition(
 %     action,

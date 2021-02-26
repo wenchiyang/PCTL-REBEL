@@ -4,7 +4,7 @@
 
 test_untilequal:-
     statistics(runtime, [Start|_]),
-    Phi = untilequal(FinalStates, 3, states([[cl(b)]]), states([[on(a,b)]]), >=, 0.6),
+    Phi = untilequal(FinalStates, 10, states([[cl(b)]]), states([[on(a,b)]]), >=, 0.6),
     evaluate(Phi), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,R|_],
@@ -13,9 +13,27 @@ test_untilequal:-
     printall(FinalStates).
 
 
-experiment1:-
+reach_within_step(B):-
     statistics(runtime, [Start|_]),
-    Phi = until(_, 1, states([[]]), states([[on(a,b)]]), >=, 0.6),
+    Phi = until(_, B, states([[]]), states([[on(a,b)]]), >=, 0.5),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,R|_],
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
+reach_10_steps:-
+    statistics(runtime, [Start|_]),
+    Phi = until(_, 10, states([[]]), states([[on(a,b)]]), >=, 0.5),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    % Res = [_,R|_],
+    % print_message(informational, phistates(Phi)),
+    print_message(informational, exetime(Start, Stop)).
+
+reach_2000_steps:-
+    statistics(runtime, [Start|_]),
+    Phi = until(_, 2000, states([[]]), states([[on(a,b)]]), >=, 0.5),
     evaluate(Phi), !,
     statistics(runtime, [Stop|_]),
     % Res = [_,R|_],

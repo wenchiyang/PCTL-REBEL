@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 #import matplotlib as mpl
 from matplotlib.ticker import FormatStrFormatter
 
@@ -262,6 +263,23 @@ def stepbound():
     plt.savefig('stepbound.png')
     plt.show()
 
+
+def state_number():
+    num_blocks = [x for x in range(2,11)]
+    num_abs_states = [2,3,4,7,11,15,22,30,42]
+    num_ground_states = [3, 12,73,501,4051,37633,394353,4596553,58941091]
+    num_transitions = [8,60,480,4280,42600,470148,5707520]
+    fig, ax = plt.subplots()
+
+    ax.plot(num_blocks, num_abs_states, '-.o', color='#2ca02c', label="#abstract states")
+    ax.plot(num_blocks, num_ground_states, '-.o', color='#d62728', label="#ground states")
+    ax.plot([x for x in range(2,9)], num_transitions, '-.o', color='#ff7f0e', label="#non-det. transitions")
+    ax.set_yscale('log')
+    plt.xlabel('number of blocks')
+    plt.legend()
+    plt.title("State explosion in blocks world")
+    # plt.show()
+    plt.savefig("stateexplosion.jpg")
 # PRISM_STORM()
 # prism_figure()
 # storm_figure()
@@ -269,4 +287,6 @@ def stepbound():
 # blocksworld_limit()
 # load_unload_limit()
 # limit()
-stepbound()
+# stepbound()
+state_number()
+
