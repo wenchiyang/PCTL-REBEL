@@ -40,6 +40,25 @@ reach_2000_steps:-
     % print_message(informational, phistates(Phi)),
     print_message(informational, exetime(Start, Stop)).
 
+nested(I,J):-
+    statistics(runtime, [Start|_]),
+    evaluate(
+        until(_, I, states([[cl(a)]]),
+            and(_,
+                states([[on(a,b)]]),
+                until(_, J,
+                    next(_, states([[cl(e)]]), >=, 0.9),
+                    states([[on(c,d)]]),
+                    >=, 0.8
+                )
+            ),
+        >=, 0.5)
+    ), !,
+%    writeln(Res),
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
+
+
 % TODO: a bug here
 experimentXX:-
     statistics(runtime, [Start|_]),

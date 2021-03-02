@@ -2,6 +2,16 @@
 :- use_module(precond).
 
 
+
+reachNsteps(N) :-
+    statistics(runtime, [Start|_]),
+    Phi = until(_, N, states([[]]), states([[bin(b1,city0)]]), >=, 0.9),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
+
+
+
 experiment1 :-
     statistics(runtime, [Start|_]),
     Phi = until(_, 10, states([[]]), states([[bin(b1,paris)]]), >=, 0.9),

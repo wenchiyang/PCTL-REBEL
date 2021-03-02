@@ -82,10 +82,8 @@ getVFStates(VFs, States):-
     maplist(getVFState, VFs, States).
 
 %%
-% constructAbsorbingVFs([cl(c)], v(5.0, [cl(c)])):-!.
 constructAbsorbingVFs(S, v(1.0, S)).
-% constructAbsorbingQs([cl(c)], q(5.0, _, [cl(c)])):-!.
-constructAbsorbingQs(S, q(1.0, _, S, S)).
+constructAbsorbingQs(S, q(1.0, _, S)).
 
 % andstate/2:
 % get "E1 and E2"
@@ -117,43 +115,43 @@ generateOIstate([E|Es] , Set) :-
     member(E, Es),
     generateOIstate(Es , Set).
 
-generateBoundedStates(_, _, LargestObjectNum, ObjectBound):-
-    LargestObjectNum =< ObjectBound.
+generateBoundedStates(S, ObjectBound):-
+    termsInState(S, Terms),
+    length(Terms, LargestObjectNum),
+    LargestObjectNum =< ObjectBound, !.
 
-generateBoundedStates(State, TermSet, LargestObjectNum, ObjectBound):-
+generateBoundedStates(S, ObjectBound):-
+    termsInState(S, Terms),
+    length(Terms, LargestObjectNum),
     LargestObjectNum > ObjectBound,
-    generateOIstate(TermSet, TermSetSet),
-    legalstate(State),
-    length(TermSetSet, LTermSetSet),
-    LTermSetSet =< ObjectBound.
+    generateOIstate(Terms, TermSet),
+    legalstate(S),
+    length(TermSet, LTermSet),
+    LTermSet =< ObjectBound.
 
-oi_qrule(q(_,_,_,_), flexible):-
+oi_qrule(q(_,_,_), flexible):-
     blocks_limit(non), !.
 
-oi_qrule(q(_,_,S,_), flexible):-
-    termsInState(S, Terms),
-    length(Terms, LargestObjectNum),
+oi_qrule(q(_,_,S), flexible):-
     blocks_limit(ObjectBound),
-    generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
+    generateBoundedStates(S, ObjectBound).
 
-oi_qrule(partialQ(_,_,_,_), flexible):-
+oi_qrule(partialQ(_,_,_), flexible):-
     blocks_limit(non), !.
 
-oi_qrule(partialQ(_,_,S,_), flexible):-
-    termsInState(S, Terms),
-    length(Terms, LargestObjectNum),
+oi_qrule(partialQ(_,_,S), flexible):-
     blocks_limit(ObjectBound),
-    generateBoundedStates(S, Terms, LargestObjectNum, ObjectBound).
+    generateBoundedStates(S, ObjectBound).
 
 % Force all partialQ to have OI states
 oi_qrule(PQ, force):-
-    PQ = partialQ(_,_,S,VFState),
+    PQ = partialQ(_,_,S),
     termsInState(S, Terms),
     blocks_limit(ObjectBound),
     generateOIstate(Terms, TermsSet),
     legalstate(S),
-    legalstate(VFState),
     length(TermsSet, LTermsSet),
     LTermsSet =< ObjectBound
     .
 %%%%%%%%%%%%%%%OIOIOIOI%%%%%%%%%%%%%%%
+

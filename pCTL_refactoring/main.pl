@@ -6,12 +6,17 @@
 %:- set_prolog_flag(optimize,full).
 
 
-memo(Step, Goal) :-
-        (   recorded(Step,Goal)
-        -> true
-        ;   once(Goal),
-            recorda(Step, Goal)
+memo(Step, Goal, Ref) :-
+        (   recorded(Step,Goal,Ref)
+        ->
+            true
+        ;
+            once(Goal),
+            recorda(Step, Goal, _)
         ).
+
+printDB :-
+    findall(I, recorded(I,_),B), writeln(B).
 
 % Syntax checking -- Do not allow [].
 % evaluate(Phi, []) :- functor(Phi, [], _), !.
@@ -27,7 +32,6 @@ evaluate(Phi) :-
     evaluate(Phi1), !, arg(1, Phi1, Phi1States),
     evaluate(Phi2), !, arg(1, Phi2, Phi2States),
     apply(until, [PhiStates, Steps, Phi1States, Phi2States, Op, Threshold]), !.
-    % print_message(informational, phistates(Phi)).
 
 % evaluate next formula:
 % PhiStates == P_{Op Threshold} [X Phi2]
@@ -35,7 +39,6 @@ evaluate(Phi) :-
     Phi =.. [next, PhiStates, Phi2, Op, Threshold],
     evaluate(Phi2), !, arg(1, Phi2, Phi2States),
     apply(next, [PhiStates, Phi2States, Op, Threshold]), !.
-    % print_message(informational, phistates(Phi)).
 
 % evaluate and formula:
 % PhiStates == Phi1 and Phi2
@@ -43,10 +46,8 @@ evaluate(Phi) :-
     Phi =.. [and, PhiStates, Phi1, Phi2],
     evaluate(Phi1), !, arg(1, Phi1, Phi1States),
     evaluate(Phi2), !, arg(1, Phi2, Phi2States),
-    apply(and, [PhiStates, Phi1States, Phi2States]), !.
-    % list_to_set1(PhiStates, SortedStates),
-    % length(PhiStates, L1), length(SortedStates, L2),
-    % print_message(informational, phistates(Phi)).
+    apply(and, [PhiStates, Phi1States, Phi2States]),
+    !.
 
 % evaluate until^{=} formula:
 % PhiStates == P_{Op Threshold} [Phi1 U^{= Steps} Phi2]
@@ -61,8 +62,7 @@ evaluate(Phi) :-
 and([], [], _) :- !.
 and(Res, [E1|States1], States2):-
     maplist(andstate(E1), States2, PartialRes),
-    delete(PartialRes, [], PartialRes1),
-    append(PartialRes1, PhiStates, Res),
+    append(PartialRes, PhiStates, Res),
     and(PhiStates, States1, States2).
 
 until(SortedStates, Steps, Phi1s, Phi2s, Op, Threshold) :-
@@ -125,7 +125,8 @@ vi(TotalSteps, CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs, FinalVs):-
     % case 2: stop when the value function converges TODO to be checked
     (
         PreviousStep is CurrentStep - 1,
-        memo(PreviousStep, valueIteration_helper(PreviousStep, _, PreviousVs, _, _)),
+        memo(PreviousStep, valueIteration_helper(PreviousStep, _, PreviousVs, _, _), Ref),
+        erase(Ref),
         is_list(PreviousVs), is_list(CurrentVs),
         length(PreviousVs, L), length(CurrentVs, L),
         convergence_threshold(ConvergenceThreshold),
@@ -142,14 +143,14 @@ vi(TotalSteps, CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs, FinalVs):-
 
 valueIteration(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs):-
     print_message(informational, iteration(CurrentStep)), nl,
-    memo(CurrentStep, valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs)), !,
+    memo(CurrentStep, valueIteration_helper(CurrentStep, InitV, CurrentVs, Phi1s, Phi2sQs),_), !,
     print_message(informational, vf(CurrentVs)),
     !.
 
 valueIteration_helper(0, InitV, InitV, _, _):-!.
 valueIteration_helper(CurrentStep, InitV, CurrentV, Phi1s, Phi2sQs):-
     PreviousStep is CurrentStep-1,
-    memo(PreviousStep, valueIteration_helper(PreviousStep, InitV, PreviousV, Phi1s, Phi2sQs)),
+    memo(PreviousStep, valueIteration_helper(PreviousStep, InitV, PreviousV, Phi1s, Phi2sQs),_),
     oneIteration(PreviousV, CurrentV, Phi1s, Phi2sQs),
     !.
 
@@ -222,22 +223,22 @@ getQ(SPQs1, SPQs2, QruleExtra):-
     % try out all partialQ combinations from wp1 and wp2
     member(PartialQ1, SPQs1),
     member(PartialQ2, SPQs2),
-    PartialQ1 = partialQ(Q1,A1,_,_),
-    PartialQ2 = partialQ(_,A2,_,_),
+    PartialQ1 = partialQ(Q1,A1,_),
+    PartialQ2 = partialQ(_,A2,_),
     Q1 > 0,
     A1=A2,
     partialQstoQ(PartialQ1, PartialQ2, QruleExtra).
     % oi_qrule(Qrule).
 
 
-partialQstoQ(partialQ(Q1,A,S1,_), partialQ(Q2,A,S2,SS2),
-             q(Q, A, S2, SS2)):-
+partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
+             q(Q, A, S2)):-
     legalstate(S2),
     thetasubsumes(S1, S2), !,
     Q is Q1 + Q2, !.
 
-partialQstoQ(partialQ(Q1,A,S1,SS1), partialQ(Q2,A,S2,_),
-             q(Q, A, S1, SS1)):-
+partialQstoQ(partialQ(Q1,A,S1), partialQ(Q2,A,S2),
+             q(Q, A, S1)):-
     legalstate(S1),
     thetasubsumes(S2, S1), !,
     Q is Q1 + Q2, !.
@@ -249,15 +250,15 @@ partialQstoQ(partialQ(Q1,A,S1,SS1), partialQ(Q2,A,S2,_),
 %     !.
 
 getPartialQwp1(VFs, Phi1s, SPQs1):-
-    % garbage_collect,
+%     garbage_collect,
     findall_partialQs(PQ1, wp1(VFs,Phi1s,PQ1), SPQs1), !,
-    % garbage_collect,
+%     garbage_collect,
     !.
 
 getPartialQwp2(VFs, Phi1s, SPQs2):-
-    % garbage_collect,
+%     garbage_collect,
     findall_partialQs(PQ2, wp2(VFs,Phi1s,PQ2), SPQs2), !,
-    % garbage_collect,
+%     garbage_collect,
     !.
 
 
@@ -273,7 +274,7 @@ getPartialQwp2(VFs, Phi1s, SPQs2):-
 % TODO merge wp1 and wp2
 wp1(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
-    % VFValue > 0,
+    VFValue > 0,
     transition(Action, 1, Prob, Head_i, Body),
     wpi(Head_i, Prob, Action, Body, Phi1s, VFValue, VFState, PQ).
 
@@ -286,7 +287,7 @@ wp2(VFs, Phi1s, PQ) :-
 % Takes an action rule "ActionHead <----Prob:[Act]---- ActionBody"
 % and a value function "VFValue <----- VFState"
 %%%%% Step 1 : get weakest precondition
-wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S,VFState)):-
+wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S)):-
      % get a subH
      subsetgen(Head, SubH),
      % create all possible \theta
@@ -297,7 +298,7 @@ wpi(Head, Prob, Act, Body, Phi1s, VFValue, VFState, partialQ(Q,A,S,VFState)):-
      headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
               partialQ(Q,A,S)),
      oi_option(OI_option),
-     oi_qrule(partialQ(Q,A,S,VFState), OI_option).
+     oi_qrule(partialQ(Q,A,S), OI_option).
 
 
 headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
@@ -314,7 +315,7 @@ headbody(Head, VFValue, VFSTail, Prob, Act, Body, Phi1s,
 
 %% TODO use maplist for this
 qTransfer([],[]):- !.
-qTransfer([q(Q,_,S,_)|Qs],[v(Q,S)|Vs]):-
+qTransfer([q(Q,_,S)|Qs],[v(Q,S)|Vs]):-
     qTransfer(Qs, Vs), !.
 
 
@@ -339,16 +340,16 @@ findall_Qrules(X, InitQs, Goal, Results) :-
 addQ([], New_QRule, [New_QRule]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addQ([q(Q1,A1,S1,SS1)|T0], q(Q,_,S,_), [q(Q1,A1,S1,SS1)|T0]) :-
+addQ([q(Q1,A1,S1)|T0], q(Q,_,S), [q(Q1,A1,S1)|T0]) :-
     Q1 >= Q,
     thetasubsumes(S1,S), !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
 % and add New_QRule
-addQ([q(Q1,_,S1,_)|T0], q(Q,A,S,SS), T) :-
+addQ([q(Q1,_,S1)|T0], q(Q,A,S), T) :-
     Q1 =< Q,
     thetasubsumes(S, S1), !,
-    addQ(T0, q(Q,A,S,SS), T), !.
+    addQ(T0, q(Q,A,S), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1
@@ -376,18 +377,18 @@ findall_partialQs(X, Goal, Results) :-
 addpartialQ([], New_partialQ, [New_partialQ]) :- !.
 % Base case 2:
 % if some QRule1 with Q1 >= Q subsumess New_QRule, discard New_QRule
-addpartialQ([partialQ(Q1,A1,S1,SS1)|T0], partialQ(Q,A,S,_), [partialQ(Q1,A1,S1,SS1)|T0]) :-
+addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), [partialQ(Q1,A1,S1)|T0]) :-
 %    writeln(2),
     Q1 >= Q,
     thetasubsumes([A1|S1],[A|S]),
     !.
 
 % if New_QRule subsumess QRule1 with Q1 =< Q, discard QRule1
-addpartialQ([partialQ(Q1,A1,S1,_)|T0], partialQ(Q,A,S,SS), T) :-
+addpartialQ([partialQ(Q1,A1,S1)|T0], partialQ(Q,A,S), T) :-
 %    writeln(3),
     Q1 =< Q,
     thetasubsumes([A|S], [A1|S1]),
-    addpartialQ(T0, partialQ(Q,A,S,SS), T), !.
+    addpartialQ(T0, partialQ(Q,A,S), T), !.
 
 % if New_QRule and QRule1 do not subsumess each other,
 % check the next QRule1

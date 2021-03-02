@@ -10,7 +10,7 @@ s.communicate()
 
 
 l = [
-    ["exp1", ['swipl','-g','experiment1','-g','halt','properties.pl']]
+    ["exp1", ['swipl','-g','reachNsteps(3)','-g','halt','properties.pl']]
     # ["exp2", ['swipl','-g','experiment2','-g','halt','properties.pl']]
     # ["experimentX_iter_1", ['swipl','-g','experimentX_iter_1','-g','halt','properties.pl']],
     # ["experimentF_iter_1", ['swipl','-g','experimentF_iter_1','-g','halt','properties.pl']],
@@ -25,10 +25,3 @@ for exp in l:
     with open(outputfilename, 'w') as f:
         process = subprocess.Popen(expargs, stdout=f)
         process.communicate()
-    # read outputfile
-    # with open(outputfilename, 'r') as f:
-    #     content = f.read()
-    #     last_vf = visualizeBlocksworld.getlastvaluefunction(content)
-    #     imgfolder = "visualization/tempfigures/"
-    #     imgfile = expFolder+name+".jpg"
-    #     visualizeBlocksworld.main(last_vf, imgfolder, imgfile)

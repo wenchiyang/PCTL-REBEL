@@ -4,15 +4,15 @@
                     convergence_threshold/1,
                     transition/5,
                     oi_option/1,
-                    mydif/2
-%                    highway/2
+                    mydif/2,
+                    highway/2
                     ]).
 
 
 nonDetActions(nondet). % nondet/det
-blocks_limit(100). % non/an integer > 3
-discountfactor(0.9). %
-convergence_threshold(0.0001). % residual for the VI algorithm to stop
+blocks_limit(non). % non/an integer > 3
+discountfactor(1.0). %
+convergence_threshold(0.01). % residual for the VI algorithm to stop
 oi_option(flexible).
 
 % transition(
@@ -44,70 +44,47 @@ transition(load(B,T), 2, 0.1,
 transition(drive(T,C1), 1, 1.0,
         [tin(T,C1)],
         [tin(T,C2)]):-
-%            highway(C1,C2),
+            highway(C1,C2),
             mydif(C1,C2), mydif(T,C1), mydif(T,C2).
 
 transition(drive(T,C1), 2, 0.0,
         [tin(T,C2)],
         [tin(T,C2)]):-
-%            highway(C1,C2),
+            highway(C1,C2),
             mydif(C1,C2), mydif(T,C1), mydif(T,C2).
 
 mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
 
+highway(city0,city4).
+highway(city0,city3).
+highway(city0,city2).
+highway(city0,city5).
+highway(city0,city7).
+highway(city1,city6).
+highway(city1,city3).
+highway(city1,city4).
+highway(city2,city0).
+highway(city2,city7).
+highway(city2,city5).
+highway(city2,city3).
+highway(city2,city4).
+highway(city3,city0).
+highway(city3,city1).
+highway(city3,city4).
+highway(city3,city2).
+highway(city3,city6).
+highway(city4,city0).
+highway(city4,city1).
+highway(city4,city3).
+highway(city4,city2).
+highway(city4,city6).
+highway(city5,city2).
+highway(city5,city7).
+highway(city5,city0).
+highway(city6,city1).
+highway(city6,city4).
+highway(city6,city3).
+highway(city7,city2).
+highway(city7,city5).
+highway(city7,city0).
 
-%highway(brussels, paris).
-%highway(brussels, rome).
-%
-%highway(paris, brussels).
-%
-%highway(rome, brussels).
-% highway(rome, berlin).
-% highway(berlin, rome).
-% highway(brussels, berlin).
-% highway(berlin, brussels).
-% highway(moscow, berlin).
-% highway(berlin, moscow).
-% highway(moscow, brussels).
-% highway(brussels, moscow).
-
-
-% highway(paris, madrid).
-% highway(madrid, paris).
-% highway(berlin, prague).
-% highway(prague, berlin).
-% highway(brussels, gent).
-% highway(gent, brussels).
-% highway(brussels, leuven).
-% highway(leuven, brussels).
-% highway(paris, barcelona).
-% highway(barcelona, paris).
-% highway(barcelona, madrid).
-% highway(madrid, barcelona).
-
-
-% highway(leuven, rotterdam).
-% highway(rotterdam, leuven).
-% highway(rotterdam, amsterdam).
-% highway(amsterdam, rotterdam).
-% highway(copenhagen, amsterdam).
-% highway(amsterdam, copenhagen).
-% highway(amsterdam, brussels).
-% highway(brussels, amsterdam).
-
-
-
-
-
-
-
-
-%
-% highway(stockholm, copenhagen).
-% highway(copenhagen, stockholm).
-% highway(madrid, lisbon).
-% highway(lisbon, madrid).
-% highway(rome, naples).
-% highway(naples, rome).
-% highway(moscow, helsinki).
-% highway(helsinki, moscow).
