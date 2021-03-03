@@ -1,27 +1,26 @@
 # from visualization import visualizeBlocksworld
 import subprocess
+import os, pathlib, errno
 
-expFolder = 'experiments/'
-
-s = subprocess.Popen(['rm', '-r', expFolder])
-s.communicate()
-s = subprocess.Popen(['mkdir', expFolder])
-s.communicate()
-
-
-l = [
-    ["exp1", ['swipl','-g','reachNsteps(3)','-g','halt','properties.pl']]
-    # ["exp2", ['swipl','-g','experiment2','-g','halt','properties.pl']]
-    # ["experimentX_iter_1", ['swipl','-g','experimentX_iter_1','-g','halt','properties.pl']],
-    # ["experimentF_iter_1", ['swipl','-g','experimentF_iter_1','-g','halt','properties.pl']],
-    # ["experimentU_iter_1", ['swipl','-g','experimentU_iter_1','-g','halt','properties.pl']]
-]
+CWD = pathlib.Path(__file__).parent.absolute()
+EXPFOLDER = os.path.join(CWD,"experiments")
+if not os.path.exists(EXPFOLDER):
+    try:
+        os.makedirs(EXPFOLDER)
+    except OSError as exc:  # Guard against race condition
+        if exc.errno != errno.EEXIST:
+            raise
 
 
-for exp in l:
-    name = exp[0]
-    expargs = exp[1]
-    outputfilename = expFolder+name+".txt"
-    with open(outputfilename, 'w') as f:
+
+def reachability_tasks_with_a_policy():
+    step = 5
+    log_file = os.path.join(EXPFOLDER, "reachability_tasks_with_a_policy.log")
+    with open(log_file, 'w+') as f:
+        expargs = ['swipl','-g','reachability_tasks_with_a_policy({0})'.format(step),'-g','halt','properties.pl']
         process = subprocess.Popen(expargs, stdout=f)
         process.communicate()
+
+if __name__ == "__main__":
+    reachability_tasks_with_a_policy()
+

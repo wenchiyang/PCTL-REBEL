@@ -275,11 +275,13 @@ getPartialQwp2(VFs, Phi1s, SPQs2):-
 wp1(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
     VFValue > 0,
+    policy(VFState, Action),
     transition(Action, 1, Prob, Head_i, Body),
     wpi(Head_i, Prob, Action, Body, Phi1s, VFValue, VFState, PQ).
 
 wp2(VFs, Phi1s, PQ) :-
     member(v(VFValue, VFState), VFs),
+    policy(VFState, Action),
     transition(Action, 2, Prob, Head_i, Body),
     wpi(Head_i, Prob, Action, Body, Phi1s, VFValue, VFState, PQ).
 

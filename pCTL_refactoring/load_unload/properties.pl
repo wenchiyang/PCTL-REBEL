@@ -10,6 +10,12 @@ reachNsteps(N) :-
     statistics(runtime, [Stop|_]),
     print_message(informational, exetime(Start, Stop)).
 
+reachability_tasks_with_a_policy(N):-
+    statistics(runtime, [Start|_]),
+    Phi = until(_, N, states([[]]), states([[bin(b1,city0)]]), >=, 0.9),
+    evaluate(Phi), !,
+    statistics(runtime, [Stop|_]),
+    print_message(informational, exetime(Start, Stop)).
 
 
 experiment1 :-

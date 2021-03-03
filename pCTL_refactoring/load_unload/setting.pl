@@ -5,7 +5,8 @@
                     transition/5,
                     oi_option/1,
                     mydif/2,
-                    highway/2
+                    highway/2,
+                    policy/2
                     ]).
 
 
@@ -14,6 +15,33 @@ blocks_limit(non). % non/an integer > 3
 discountfactor(1.0). %
 convergence_threshold(0.01). % residual for the VI algorithm to stop
 oi_option(flexible).
+
+%%%%%%%%% MAP %%%%%%%%%%%%
+highway(city0,city1).
+%highway(city0,city2).
+highway(city1,city0).
+%highway(city1,city1).
+%highway(city2,city0).
+%highway(city2,city1).
+
+%%%%%%%%% POLICY %%%%%%%%%%%%
+
+% if parcel B is on truch T, then unload B from T
+policy(State, unload(B,T)) :-
+    member(on(B,T), State), !.
+
+% else if: truck T is empty and is in city0, drive to city1
+policy(State, drive(T,city1)) :-
+    member(tin(T,city0), State),
+    \+ member(on(_, T)), !.
+
+% else if: truck T is empty and is in city1, drive to city0
+policy(State, drive(T,city0)) :-
+    member(tin(T,city1), State),
+    \+ member(on(_, T)), !.
+
+% else: choose a random action (this rule should never be activated if the policy is complete)
+policy(_,_) :- !.
 
 % transition(
 %     action,
@@ -55,36 +83,4 @@ transition(drive(T,C1), 2, 0.0,
 
 mydif(X,Y):- (X \= Y -> true; dif(X,Y)).
 
-highway(city0,city4).
-highway(city0,city3).
-highway(city0,city2).
-highway(city0,city5).
-highway(city0,city7).
-highway(city1,city6).
-highway(city1,city3).
-highway(city1,city4).
-highway(city2,city0).
-highway(city2,city7).
-highway(city2,city5).
-highway(city2,city3).
-highway(city2,city4).
-highway(city3,city0).
-highway(city3,city1).
-highway(city3,city4).
-highway(city3,city2).
-highway(city3,city6).
-highway(city4,city0).
-highway(city4,city1).
-highway(city4,city3).
-highway(city4,city2).
-highway(city4,city6).
-highway(city5,city2).
-highway(city5,city7).
-highway(city5,city0).
-highway(city6,city1).
-highway(city6,city4).
-highway(city6,city3).
-highway(city7,city2).
-highway(city7,city5).
-highway(city7,city0).
 
